@@ -8,7 +8,45 @@ import "../style/landing.scss";
 
 export default function Home() {
     const [activeTab, setActiveTab] = React.useState(0);
-    const [openLoginAlert, LoginAlert] = React.useState(false);
+
+    const [username, setUsername] = React.useState("");
+    const [password, setPassword] = React.useState("");
+    const [openLoginAlert, setOpenLoginAlert] = React.useState(false);
+    const [alertMessage, setAlertMessage] = React.useState("");
+    const [alertSeverity, setAlertSeverity] = React.useState("warning");
+
+    const handleLogin = async () => {
+        setOpenLoginAlert(true);
+        setAlertMessage("Login in progress...");
+        setAlertSeverity("warning");
+
+        try {
+            const res = await fetch("/api/login", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ username, password }),
+            });
+
+            const data = await res.json();
+
+            if (res.ok) {
+                setAlertMessage("Login successful!");
+                setAlertSeverity("success");
+                localStorage.setItem("token", data.token);
+
+            } else {
+                setAlertMessage(data.error || "Login failed. Please try again.");
+                setAlertSeverity("error");
+            }
+        } catch (error) {
+            setAlertMessage("An error occurred. Please try again later.");
+            setAlertSeverity("error");
+        } finally {
+            setOpenLoginAlert(true);
+        }
+    };
+
+
     const [openRegisterAlert, RegisterAlert] = React.useState(false);
 
     const handleTabChange = (event, newValue) => {
@@ -34,18 +72,31 @@ export default function Home() {
                 </Tabs>
                 {activeTab === 0 && (
                     <Box component="form" sx={{ mt: 2 }}>
-                        <TextField fullWidth label="Username" margin="normal" />
-                        <TextField fullWidth label="Password" type="password" margin="normal" />
+                        <TextField
+                            fullWidth
+                            label="Username"
+                            margin="normal"
+                            value={username}
+                            onChange={(e) => setUsername(e.target.value)}
+                        />
+                        <TextField
+                            fullWidth
+                            label="Password"
+                            type="password"
+                            margin="normal"
+                            value={password}
+                            onChange={(e) => setPassword(e.target.value)}
+                        />
                         <Collapse in={openLoginAlert}>
                             <Alert
-                                severity="warning"
+                                severity={alertSeverity}
                                 action={
                                     <IconButton
                                         aria-label="close"
                                         color="inherit"
                                         size="small"
                                         onClick={() => {
-                                            LoginAlert(false);
+                                            setOpenLoginAlert(false);
                                         }}
                                     >
                                         <CloseIcon fontSize="inherit" />
@@ -53,7 +104,7 @@ export default function Home() {
                                 }
                                 sx={{ mt: 2 }}
                             >
-                                Login in progress...
+                                {alertMessage}
                             </Alert>
                         </Collapse>
                         <Grid2
@@ -64,7 +115,7 @@ export default function Home() {
                                 alignItems: "center",
                             }}
                         >
-                            <Button onClick={() => { LoginAlert(true); }} disabled={openLoginAlert} variant="contained" sx={{ mt: 2 }}>
+                            <Button onClick={() => { handleLogin(); }} disabled={openLoginAlert} variant="contained" sx={{ mt: 2 }}>
                                 Log In
                             </Button>
                         </Grid2>
