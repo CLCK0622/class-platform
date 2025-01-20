@@ -5,6 +5,8 @@ import { pool } from "@/utils/db";
 
 export async function POST(req) {
 
+    console.log("Logging in...");
+
     const { username, password } = await req.json();
 
     if (!username || !password) {
