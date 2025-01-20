@@ -9,9 +9,6 @@ export async function POST(req) {
     const { username, password } = await req.json();
     console.log("Parsed data:", { username, password });
 
-    const result = await pool.query("SELECT NOW()");
-    console.log("Database test result:", result.rows[0]);
-
     if (!username || !password) {
         return NextResponse.json({ error: "Username and password are required" }, { status: 400 });
     }
@@ -20,7 +17,7 @@ export async function POST(req) {
         const user = await pool.query("SELECT * FROM users WHERE username = $1", [username]);
 
         if (user.rowCount === 0) {
-            return NextResponse.json({ error: "Invalid username or password" }, { status: 401 });
+            return NextResponse.json({ error: "Invalid user" }, { status: 401 });
         }
 
         const isValidPassword = await bcrypt.compare(password, user.rows[0].password);
