@@ -1,13 +1,16 @@
 import { NextResponse } from "next/server";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
-import { pool } from "@/utils/db";
+import { pool } from "@utils/db";
 
 export async function POST(req) {
 
     console.log("Logging in...");
-
     const { username, password } = await req.json();
+    console.log("Parsed data:", { username, password });
+
+    const result = await pool.query("SELECT NOW()");
+    console.log("Database test result:", result.rows[0]);
 
     if (!username || !password) {
         return NextResponse.json({ error: "Username and password are required" }, { status: 400 });
