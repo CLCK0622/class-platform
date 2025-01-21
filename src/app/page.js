@@ -1,12 +1,15 @@
-"use client"
+"use client";
 
 import React from "react";
+import { useRouter } from "next/navigation.js";
 import { Container, Typography, Box, Tabs, Tab, TextField, Button, Collapse, Alert, IconButton, Grid2 } from "@mui/material";
 import CloseIcon from '@mui/icons-material/Close';
 import NavBar from "./nav-bar.js";
 import "../style/landing.scss";
 
 export default function Home() {
+    const router = useRouter();
+
     const [activeTab, setActiveTab] = React.useState(0);
 
     const [username, setUsername] = React.useState("");
@@ -15,8 +18,6 @@ export default function Home() {
     const [openLoginAlert, setOpenLoginAlert] = React.useState(false);
     const [alertMessage, setAlertMessage] = React.useState("");
     const [alertSeverity, setAlertSeverity] = React.useState("warning");
-
-
 
     const handleLogin = async () => {
         setOpenLoginAlert(true);
@@ -36,7 +37,9 @@ export default function Home() {
                 setAlertMessage("Login successful!");
                 setAlertSeverity("success");
                 localStorage.setItem("token", data.token);
-
+                setTimeout(() => {
+                    router.push("/dashboard");
+                }, 500);
             } else {
                 setAlertMessage(data.error || "Login failed. Please try again.");
                 setAlertSeverity("error");
@@ -86,6 +89,7 @@ export default function Home() {
         setOpenLoginAlert(false);
         setOpenRegisterAlert(false);
     };
+
     return (
         <>
             <NavBar />

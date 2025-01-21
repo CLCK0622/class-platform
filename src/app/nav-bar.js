@@ -1,14 +1,18 @@
 const { AppBar, Container, Toolbar, Box, IconButton, Menu, MenuItem, Typography, Button, Tooltip, Avatar } = require("@mui/material");
 import * as React from "react";
 import MenuIcon from '@mui/icons-material/Menu';
-import AdbIcon from '@mui/icons-material/Adb';
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import Link from "next/link";
 
-const pages = ['Courses', 'Pricing', 'Notice'];
+const pages = ['Courses', 'Notice'];
 const settings = ['My Classes', 'Dashboard', 'Logout'];
 
 function NavBar() {
     const [anchorElNav, setAnchorElNav] = React.useState(null);
     const [anchorElUser, setAnchorElUser] = React.useState(null);
+    const [user, setUser] = React.useState(null);
+    const router = useRouter();
 
     const handleOpenNavMenu = (event) => {
         setAnchorElNav(event.currentTarget);
@@ -24,6 +28,38 @@ function NavBar() {
     const handleCloseUserMenu = () => {
         setAnchorElUser(null);
     };
+
+    const handleLogout = async () => {
+        try {
+            await fetch("/api/logout", { method: "POST" });
+            localStorage.removeItem("token");
+            setTimeout(() => {
+                router.push("/");
+            }, 250);
+        } catch (error) {
+            console.error("Logout failed:", error);
+        }
+    };
+
+    useEffect(() => {
+        async function fetchSession() {
+            const token = localStorage.getItem("token");
+            if (!token) return;
+
+            const res = await fetch("/api/session", {
+                headers: { Authorization: `Bearer ${token}` },
+            });
+
+            if (res.ok) {
+                const data = await res.json();
+                setUser(data.user);
+            } else {
+                setUser(null);
+            }
+        }
+
+        fetchSession();
+    }, []);
 
     return (
         <AppBar position="static">
@@ -110,11 +146,17 @@ function NavBar() {
                         ))}
                     </Box>
                     <Box sx={{ flexGrow: 0 }}>
-                        <Tooltip title="Open settings">
-                            <IconButton onClick={handleOpenUserMenu} sx={{ p: 0 }}>
-                                <Avatar alt="Remy Sharp" src="" />
-                            </IconButton>
-                        </Tooltip>
+                        {user ? (
+                            <Tooltip title="Open settings">
+                                <IconButton onClick={handleOpenUserMenu} sx={{ p: 0 }}>
+                                    <Avatar alt="Remy Sharp" src={user.avatar_url || ""} />
+                                </IconButton>
+                            </Tooltip>
+                        ) : (
+                            <Link href={"/"}>
+                                <Button sx={{ color: "white" }}>Login/Register</Button>
+                            </Link>
+                        )}
                         <Menu
                             sx={{ mt: '45px' }}
                             id="menu-appbar"
@@ -133,7 +175,11 @@ function NavBar() {
                         >
                             {settings.map((setting) => (
                                 <MenuItem key={setting} onClick={handleCloseUserMenu}>
-                                    <Typography sx={{ textAlign: 'center' }}>{setting}</Typography>
+                                    {setting === 'Logout' ? (
+                                        <Typography sx={{ textAlign: 'center' }} onClick={handleLogout}>{setting}</Typography>
+                                    ) : (
+                                        <Typography sx={{ textAlign: 'center' }}>{setting}</Typography>
+                                    )}
                                 </MenuItem>
                             ))}
                         </Menu>
