@@ -3,13 +3,49 @@
 import { Box, Container, Typography, Grid2 } from "@mui/material";
 import * as React from "react";
 import NavBar from "../components/nav-bar";
-import { useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
-import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
-import { DateCalendar } from '@mui/x-date-pickers/DateCalendar';
+import { DataGrid } from '@mui/x-data-grid';
+import { useEffect, useState } from 'react';
 
-function SchedulePlaceholder() {
+function CoursesTaken({ user }) {
+    const [rows, setRows] = useState([]);
+
+    useEffect(() => {
+        console.log(user);
+        if (!user) return;
+        async function fetchCourses() {
+            try {
+                const response = await fetch(`/api/userCourses?userId=${user.id}`);
+                const data = await response.json();
+                setRows(data.map((item, index) => ({
+                    id: item.id,
+                    index: index + 1,
+                    date: new Date(item.date).toLocaleDateString(),
+                    startTime: item.start_time,
+                    duration: item.duration,
+                    status: item.status,
+                    courseName: item.course_name,
+                    subject: item.subject,
+                    teacherId: item.teacher_id,
+                })));
+            } catch (error) {
+                console.error('Error fetching courses:', error);
+            }
+        }
+        fetchCourses();
+    }, [user]);
+
+    const columns = [
+        { field: 'index', headerName: '#', width: 50 },
+        { field: 'date', headerName: 'Date', width: 100 },
+        { field: 'startTime', headerName: 'Start Time', width: 120 },
+        { field: 'duration', headerName: 'Duration', width: 100 },
+        { field: 'status', headerName: 'Status', width: 120 },
+        { field: 'courseName', headerName: 'Course Name', width: 200 },
+        { field: 'subject', headerName: 'Subject', width: 150 },
+        { field: 'teacherId', headerName: 'Teacher ID', width: 120 },
+    ];
+
     return (
         <Box
             bgcolor="grey.200"
@@ -18,12 +54,18 @@ function SchedulePlaceholder() {
             borderRadius={2}
             minHeight={300}
         >
-            <Typography variant="h6" color="textSecondary">
-                Class Schedule (WIP)
+            <Typography variant="h6" color="textSecondary" gutterBottom>
+                All Courses
             </Typography>
-            <LocalizationProvider dateAdapter={AdapterDayjs}>
-                <DateCalendar />
-            </LocalizationProvider>
+            <Box sx={{ height: 400, width: '100%' }}>
+                <DataGrid
+                    rows={rows}
+                    columns={columns}
+                    pageSize={5}
+                    rowsPerPageOptions={[5, 10, 20]}
+                    disableSelectionOnClick
+                />
+            </Box>
         </Box>
     );
 }
@@ -103,7 +145,7 @@ export default function Dashboard() {
                         </Box>
                     </Grid2>
                     <Grid2 item="true" size={12}>
-                        <SchedulePlaceholder />
+                        <CoursesTaken user={user} />
                     </Grid2>
                 </Grid2>
             </Container >
