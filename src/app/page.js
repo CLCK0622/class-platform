@@ -16,7 +16,7 @@ export default function Home() {
     const [alertMessage, setAlertMessage] = React.useState("");
     const [alertSeverity, setAlertSeverity] = React.useState("warning");
 
-    const emailExp = /^[a-zA-Z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-zA-Z0-9!#$%&'*+/=?^_`{|}~-]+)*@[a-zA-Z0-9](?:[a-zA-Z0-9-]*[a-zA-Z0-9])?\.(?:[a-zA-Z]{2}|com|org|net|gov|mil|edu|top|info)$/;
+
 
     const handleLogin = async () => {
         setOpenLoginAlert(true);
@@ -57,25 +57,20 @@ export default function Home() {
         setAlertSeverity("warning");
 
         try {
-            if (emailExp.test(email)) {
-                const res = await fetch("/api/register", {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ username, email, password }),
-                })
+            const res = await fetch("/api/register", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ username, email, password }),
+            })
 
-                const data = await res.json();
-                console.log(data);
+            const data = await res.json();
+            console.log(data);
 
-                if (res.ok) {
-                    setAlertMessage("Register successful! Please log in.");
-                    setAlertSeverity("success");
-                } else {
-                    setAlertMessage(data.error || "Register failed, please try again.");
-                    setAlertSeverity("error");
-                }
+            if (res.ok) {
+                setAlertMessage("Register successful! Please log in.");
+                setAlertSeverity("success");
             } else {
-                setAlertMessage("Please input a valid email.");
+                setAlertMessage(data.error || "Register failed, please try again.");
                 setAlertSeverity("error");
             }
         } catch (error) {

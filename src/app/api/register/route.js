@@ -9,6 +9,12 @@ export async function POST(req) {
         return NextResponse.json({ error: "All fields are required." }, { status: 400 });
     }
 
+    const emailExp = /^[a-zA-Z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-zA-Z0-9!#$%&'*+/=?^_`{|}~-]+)*@[a-zA-Z0-9](?:[a-zA-Z0-9-]*[a-zA-Z0-9])?\.(?:[a-zA-Z]{2}|com|org|net|gov|mil|edu|top|info)$/;
+
+    if (!emailExp.test(email)) {
+        return NextResponse.json({ error: "Please enter a valid email." }, { status: 400 });
+    }
+
     try {
         const hashedPassword = await bcrypt.hash(password, 10);
         await pool.query(
