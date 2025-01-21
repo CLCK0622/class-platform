@@ -3,10 +3,9 @@ import * as React from "react";
 import MenuIcon from '@mui/icons-material/Menu';
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import Link from "next/link";
+import { Link } from "@mui/material";
 
 const pages = ['Courses', 'Notice'];
-const settings = ['My Classes', 'Dashboard', 'Logout'];
 
 function NavBar() {
     const [anchorElNav, setAnchorElNav] = React.useState(null);
@@ -69,7 +68,7 @@ function NavBar() {
                         variant="h6"
                         noWrap
                         component="a"
-                        href="#app-bar-with-responsive-menu"
+                        href="/dashboard"
                         sx={{
                             mr: 2,
                             display: { xs: 'none', md: 'flex' },
@@ -173,15 +172,15 @@ function NavBar() {
                             open={Boolean(anchorElUser)}
                             onClose={handleCloseUserMenu}
                         >
-                            {settings.map((setting) => (
-                                <MenuItem key={setting} onClick={handleCloseUserMenu}>
-                                    {setting === 'Logout' ? (
-                                        <Typography sx={{ textAlign: 'center' }} onClick={handleLogout}>{setting}</Typography>
-                                    ) : (
-                                        <Typography sx={{ textAlign: 'center' }}>{setting}</Typography>
-                                    )}
-                                </MenuItem>
-                            ))}
+                            <MenuItem>
+                                <Typography sx={{ textAlign: 'center' }}>My Classes</Typography>
+                            </MenuItem>
+                            <MenuItem>
+                                <Link color="inherit" underline="none" sx={{ textAlign: 'center' }} href={"/dashboard"}>Dashboard</Link>
+                            </MenuItem>
+                            <MenuItem>
+                                <Typography sx={{ textAlign: 'center' }} onClick={handleLogout}>Logout</Typography>
+                            </MenuItem>
                         </Menu>
                     </Box>
                 </Toolbar>

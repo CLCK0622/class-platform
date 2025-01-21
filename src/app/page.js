@@ -4,8 +4,7 @@ import React from "react";
 import { useRouter } from "next/navigation.js";
 import { Container, Typography, Box, Tabs, Tab, TextField, Button, Collapse, Alert, IconButton, Grid2 } from "@mui/material";
 import CloseIcon from '@mui/icons-material/Close';
-import NavBar from "./nav-bar.js";
-import "../style/landing.scss";
+import NavBar from "./components/nav-bar.js";
 
 export default function Home() {
     const router = useRouter();

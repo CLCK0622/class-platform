@@ -1,8 +1,8 @@
 "use client";
 
-import { Box, Container, Typography, Grid, Grid2 } from "@mui/material";
+import { Box, Container, Typography, Grid2 } from "@mui/material";
 import * as React from "react";
-import NavBar from "../nav-bar";
+import NavBar from "../components/nav-bar";
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
@@ -38,7 +38,7 @@ export default function Dashboard() {
             if (!token) {
                 setTimeout(() => {
                     router.push("/");
-                }, 250);
+                }, 50);
                 return;
             }
 
@@ -60,15 +60,15 @@ export default function Dashboard() {
     return (
         <>
             <NavBar />
-            <Container maxWidth="xl" sx={{ marginTop: 8 }}>
+            <Container maxWidth="xl" sx={{ marginTop: 5 }}>
                 <Box>
                     <Typography
-                        sx={{ textAlign: "center", mt: 10, fontSize: 30 }}
+                        sx={{ textAlign: "center", fontSize: 30 }}
                     >
                         Dashboard
                     </Typography>
                 </Box>
-                <Grid2 container spacing={3} sx={{ mt: 5 }}>
+                <Grid2 container spacing={3} sx={{ mt: 5, mb: 10 }}>
                     <Grid2 item="true" size={6}>
                         <Box
                             bgcolor="white"
@@ -78,7 +78,13 @@ export default function Dashboard() {
                             textAlign="center"
                         >
                             <Typography variant="h6">
-                                Hi! {user ? user.username : "null user"}
+                                Hi! {user ? user.username : ""}
+                            </Typography>
+                            <Typography variant="h6">
+                                ID: {user ? user.id : ""}
+                            </Typography>
+                            <Typography variant="h6">
+                                Email: {user ? user.email : ""}
                             </Typography>
                         </Box>
                     </Grid2>
