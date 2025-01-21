@@ -10,10 +10,13 @@ export default function Home() {
     const [activeTab, setActiveTab] = React.useState(0);
 
     const [username, setUsername] = React.useState("");
+    const [email, setEmail] = React.useState("");
     const [password, setPassword] = React.useState("");
     const [openLoginAlert, setOpenLoginAlert] = React.useState(false);
     const [alertMessage, setAlertMessage] = React.useState("");
     const [alertSeverity, setAlertSeverity] = React.useState("warning");
+
+    const emailExp = /^[a-zA-Z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-zA-Z0-9!#$%&'*+/=?^_`{|}~-]+)*@[a-zA-Z0-9](?:[a-zA-Z0-9-]*[a-zA-Z0-9])?\.(?:[a-zA-Z]{2}|com|org|net|gov|mil|edu|top|info)$/;
 
     const handleLogin = async () => {
         setOpenLoginAlert(true);
@@ -39,20 +42,54 @@ export default function Home() {
                 setAlertSeverity("error");
             }
         } catch (error) {
-            setAlertMessage("An error occurred. Please try again later.");
+            setAlertMessage("An error occurred. Please try again later.\n", error);
             setAlertSeverity("error");
         } finally {
             setOpenLoginAlert(true);
         }
     };
 
+    const [openRegisterAlert, setOpenRegisterAlert] = React.useState(false);
 
-    const [openRegisterAlert, RegisterAlert] = React.useState(false);
+    const handleRegister = async () => {
+        setOpenRegisterAlert(true);
+        setAlertMessage("Register in progress...");
+        setAlertSeverity("warning");
+
+        try {
+            if (emailExp.test(email)) {
+                const res = await fetch("/api/register", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ username, email, password }),
+                })
+
+                const data = await res.json();
+                console.log(data);
+
+                if (res.ok) {
+                    setAlertMessage("Register successful! Please log in.");
+                    setAlertSeverity("success");
+                } else {
+                    setAlertMessage(data.error || "Register failed, please try again.");
+                    setAlertSeverity("error");
+                }
+            } else {
+                setAlertMessage("Please input a valid email.");
+                setAlertSeverity("error");
+            }
+        } catch (error) {
+            setAlertMessage("An error occurred. Please try again later.\n", error);
+            setAlertSeverity("error");
+        } finally {
+            setOpenLoginAlert(true);
+        }
+    }
 
     const handleTabChange = (event, newValue) => {
         setActiveTab(newValue);
-        LoginAlert(false);
-        RegisterAlert(false);
+        setOpenLoginAlert(false);
+        setOpenRegisterAlert(false);
     };
     return (
         <>
@@ -123,19 +160,22 @@ export default function Home() {
                 )}
                 {activeTab === 1 && (
                     <Box component="form" sx={{ mt: 2 }}>
-                        <TextField fullWidth label="Username" margin="normal" />
-                        <TextField fullWidth label="Email" type="email" margin="normal" />
-                        <TextField fullWidth label="Password" type="password" margin="normal" />
+                        <TextField fullWidth label="Username" margin="normal" value={username}
+                            onChange={(e) => setUsername(e.target.value)} />
+                        <TextField fullWidth label="Email" type="email" margin="normal" value={email}
+                            onChange={(e) => setEmail(e.target.value)} />
+                        <TextField fullWidth label="Password" type="password" margin="normal" value={password}
+                            onChange={(e) => setPassword(e.target.value)} />
                         <Collapse in={openRegisterAlert}>
                             <Alert
-                                severity="warning"
+                                severity={alertSeverity}
                                 action={
                                     <IconButton
                                         aria-label="close"
                                         color="inherit"
                                         size="small"
                                         onClick={() => {
-                                            RegisterAlert(false);
+                                            setOpenRegisterAlert(false);
                                         }}
                                     >
                                         <CloseIcon fontSize="inherit" />
@@ -143,7 +183,7 @@ export default function Home() {
                                 }
                                 sx={{ mt: 2 }}
                             >
-                                Register in progress...
+                                {alertMessage}
                             </Alert>
                         </Collapse>
                         <Grid2
@@ -154,9 +194,7 @@ export default function Home() {
                                 alignItems: "center",
                             }}
                         >
-                            <Button onClick={() => {
-                                RegisterAlert(true);
-                            }} disabled={openRegisterAlert} variant="contained" sx={{ mt: 2 }}>
+                            <Button onClick={() => { handleRegister(); }} disabled={openRegisterAlert} variant="contained" sx={{ mt: 2 }}>
                                 Register
                             </Button>
                         </Grid2>
