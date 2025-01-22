@@ -5,7 +5,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Link } from "@mui/material";
 
-const pages = ['Courses', 'Notice'];
+const pages = ['选课中心'];
 
 function NavBar() {
     const [anchorElNav, setAnchorElNav] = React.useState(null);
@@ -82,16 +82,6 @@ function NavBar() {
                         Demo
                     </Typography>
                     <Box>
-                        <IconButton
-                            size="large"
-                            aria-label="account of current user"
-                            aria-controls="menu-appbar"
-                            aria-haspopup="true"
-                            onClick={handleOpenNavMenu}
-                            color="inherit"
-                        >
-                            <MenuIcon />
-                        </IconButton>
                         <Menu
                             id="menu-appbar"
                             anchorEl={anchorElNav}
@@ -146,14 +136,14 @@ function NavBar() {
                     </Box>
                     <Box sx={{ flexGrow: 0 }}>
                         {user ? (
-                            <Tooltip title="Open settings">
+                            <Tooltip title="显示菜单">
                                 <IconButton onClick={handleOpenUserMenu} sx={{ p: 0 }}>
                                     <Avatar alt="Remy Sharp" src={user.avatar_url || ""} />
                                 </IconButton>
                             </Tooltip>
                         ) : (
                             <Link href={"/"}>
-                                <Button sx={{ color: "white" }}>Login/Register</Button>
+                                <Button sx={{ color: "white" }}>登录/注册</Button>
                             </Link>
                         )}
                         <Menu
@@ -173,13 +163,13 @@ function NavBar() {
                             onClose={handleCloseUserMenu}
                         >
                             <MenuItem>
-                                <Typography sx={{ textAlign: 'center' }}>My Classes</Typography>
+                            <Link color="inherit" underline="none" sx={{ textAlign: 'center' }} href={"/courses"}>我的课程</Link>
                             </MenuItem>
                             <MenuItem>
-                                <Link color="inherit" underline="none" sx={{ textAlign: 'center' }} href={"/dashboard"}>Dashboard</Link>
+                                <Link color="inherit" underline="none" sx={{ textAlign: 'center' }} href={"/dashboard"}>个人中心</Link>
                             </MenuItem>
                             <MenuItem>
-                                <Typography sx={{ textAlign: 'center' }} onClick={handleLogout}>Logout</Typography>
+                                <Typography sx={{ textAlign: 'center' }} onClick={handleLogout}>登出</Typography>
                             </MenuItem>
                         </Menu>
                     </Box>

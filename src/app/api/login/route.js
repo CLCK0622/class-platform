@@ -10,20 +10,20 @@ export async function POST(req) {
     console.log("Parsed data:", { username, password });
 
     if (!username || !password) {
-        return NextResponse.json({ error: "All fields are required." }, { status: 400 });
+        return NextResponse.json({ error: "请填写全部信息！" }, { status: 400 });
     }
 
     try {
         const user = await pool.query("SELECT * FROM users WHERE username = $1", [username]);
 
         if (user.rowCount === 0) {
-            return NextResponse.json({ error: "User not found. Please register." }, { status: 401 });
+            return NextResponse.json({ error: "未找到用户，请先注册。" }, { status: 401 });
         }
 
         const isValidPassword = await bcrypt.compare(password, user.rows[0].password);
 
         if (!isValidPassword) {
-            return NextResponse.json({ error: "Invalid username or password." }, { status: 401 });
+            return NextResponse.json({ error: "用户名或密码错误。" }, { status: 401 });
         }
 
         const token = jwt.sign(

@@ -6,13 +6,13 @@ export async function POST(req) {
     const { username, email, password } = await req.json();
 
     if (!username || !email || !password) {
-        return NextResponse.json({ error: "All fields are required." }, { status: 400 });
+        return NextResponse.json({ error: "请填写全部信息！" }, { status: 400 });
     }
 
     const emailExp = /^[a-zA-Z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-zA-Z0-9!#$%&'*+/=?^_`{|}~-]+)*@[a-zA-Z0-9](?:[a-zA-Z0-9-]*[a-zA-Z0-9])?\.(?:[a-zA-Z]{2}|com|org|net|gov|mil|edu|top|info)$/;
 
     if (!emailExp.test(email)) {
-        return NextResponse.json({ error: "Please enter a valid email." }, { status: 400 });
+        return NextResponse.json({ error: "请输入有效的邮箱地址。" }, { status: 400 });
     }
 
     try {
@@ -22,10 +22,10 @@ export async function POST(req) {
             [username, email, hashedPassword]
         );
 
-        return NextResponse.json({ message: "User registered successfully!" }, { status: 201 });
+        return NextResponse.json({ message: "用户注册成功！" }, { status: 201 });
     } catch (error) {
         if (error.code === "23505") {
-            return NextResponse.json({ error: "Username or email already exists." }, { status: 400 });
+            return NextResponse.json({ error: "用户名或邮箱已经存在。" }, { status: 400 });
         } else {
             return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
         }

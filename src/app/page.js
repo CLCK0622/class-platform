@@ -18,7 +18,8 @@ export default function Home() {
     const [alertMessage, setAlertMessage] = React.useState("");
     const [alertSeverity, setAlertSeverity] = React.useState("warning");
 
-    const handleLogin = async () => {
+    const handleLogin = async (event) => {
+        event.preventDefault();
         setOpenLoginAlert(true);
         setAlertMessage("Login in progress...");
         setAlertSeverity("warning");
@@ -53,7 +54,8 @@ export default function Home() {
 
     const [openRegisterAlert, setOpenRegisterAlert] = React.useState(false);
 
-    const handleRegister = async () => {
+    const handleRegister = async (event) => {
+        event.preventDefault();
         setOpenRegisterAlert(true);
         setAlertMessage("Register in progress...");
         setAlertSeverity("warning");
@@ -92,35 +94,30 @@ export default function Home() {
     return (
         <>
             <NavBar />
-            <Container maxWidth="sm" sx={{ marginTop: 8 }}>
+            <Container maxWidth="sm" sx={{ mt: 8, mb: 8 }}>
                 <Typography variant="h4" align="center" gutterBottom>
-                    Class Selection Demo
+                    选课报课网站
                 </Typography>
-                <Box sx={{ textAlign: "center", marginBottom: 2 }}>
-                    <Typography variant="body1" color="textSecondary">
-                        Notice: xxx
-                    </Typography>
-                </Box>
                 <Tabs value={activeTab} onChange={handleTabChange} centered>
-                    <Tab label="Log In" />
-                    <Tab label="Register" />
+                    <Tab label="登录" />
+                    <Tab label="注册" />
                 </Tabs>
                 {activeTab === 0 && (
-                    <Box component="form" sx={{ mt: 2 }}>
+                    <Box component="form" sx={{ mt: 2 }} onSubmit={(e) => { handleLogin(e) }} >
                         <TextField
                             fullWidth
-                            label="Username"
+                            label="用户名"
                             margin="normal"
                             value={username}
-                            onChange={(e) => setUsername(e.target.value)}
+                            onChange={(e) => {setUsername(e.target.value); setOpenLoginAlert(false);}}
                         />
                         <TextField
                             fullWidth
-                            label="Password"
+                            label="密码"
                             type="password"
                             margin="normal"
                             value={password}
-                            onChange={(e) => setPassword(e.target.value)}
+                            onChange={(e) => {setPassword(e.target.value); setOpenLoginAlert(false);}}
                         />
                         <Collapse in={openLoginAlert}>
                             <Alert
@@ -150,20 +147,20 @@ export default function Home() {
                                 alignItems: "center",
                             }}
                         >
-                            <Button onClick={() => { handleLogin(); }} disabled={openLoginAlert} variant="contained" sx={{ mt: 2 }}>
-                                Log In
+                            <Button type="submit" disabled={openLoginAlert} variant="contained" sx={{ mt: 2 }}>
+                                登录
                             </Button>
                         </Grid2>
                     </Box>
                 )}
                 {activeTab === 1 && (
-                    <Box component="form" sx={{ mt: 2 }}>
-                        <TextField fullWidth label="Username" margin="normal" value={username}
-                            onChange={(e) => setUsername(e.target.value)} />
-                        <TextField fullWidth label="Email" type="email" margin="normal" value={email}
-                            onChange={(e) => setEmail(e.target.value)} />
-                        <TextField fullWidth label="Password" type="password" margin="normal" value={password}
-                            onChange={(e) => setPassword(e.target.value)} />
+                    <Box component="form" sx={{ mt: 2 }} onSubmit={(e) => { handleRegister(e); }}>
+                        <TextField fullWidth label="用户名" margin="normal" value={username}
+                            onChange={(e) => {setUsername(e.target.value); setOpenRegisterAlert(false);}} />
+                        <TextField fullWidth label="邮箱地址" type="email" margin="normal" value={email}
+                            onChange={(e) => {setEmail(e.target.value); setOpenRegisterAlert(false);}} />
+                        <TextField fullWidth label="密码" type="password" margin="normal" value={password}
+                            onChange={(e) => {setPassword(e.target.value); setOpenRegisterAlert(false);}} />
                         <Collapse in={openRegisterAlert}>
                             <Alert
                                 severity={alertSeverity}
@@ -192,8 +189,8 @@ export default function Home() {
                                 alignItems: "center",
                             }}
                         >
-                            <Button onClick={() => { handleRegister(); }} disabled={openRegisterAlert} variant="contained" sx={{ mt: 2 }}>
-                                Register
+                            <Button type="submit" disabled={openRegisterAlert} variant="contained" sx={{ mt: 2 }}>
+                                注册
                             </Button>
                         </Grid2>
                     </Box>

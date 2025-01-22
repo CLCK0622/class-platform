@@ -7,12 +7,49 @@ import { useRouter } from "next/navigation";
 import { DataGrid } from '@mui/x-data-grid';
 import { useEffect, useState } from 'react';
 
+function PersonalInfo({ user }) {
+    return (
+        <>
+            <Box
+                bgcolor="white"
+                p={2}
+                borderRadius={2}
+                boxShadow={1}
+                height={200}
+                textAlign="center"
+            >
+                <Typography variant="h6" color="black">
+                    个人信息
+                </Typography>
+                <Box height={150} alignContent={"center"}>
+                    <Typography variant="body1">
+                        用户名：{user ? user.username : ""}
+                    </Typography>
+                    <Typography variant="body1">
+                        ID: {user ? user.id : ""}
+                    </Typography>
+                    <Typography variant="body1">
+                        邮箱地址：{user ? user.email : ""}
+                    </Typography>
+                </Box>
+            </Box>
+        </>
+    )
+}
+
 function CoursesTaken({ user }) {
     const [rows, setRows] = useState([]);
 
+    const seasonMapping = {
+        1: "春季",
+        2: "夏季",
+        3: "秋季",
+        4: "冬季",
+    };
+
     useEffect(() => {
-        console.log(user);
         if (!user) return;
+
         async function fetchCourses() {
             try {
                 const response = await fetch(`/api/userCourses?userId=${user.id}`);
@@ -20,51 +57,142 @@ function CoursesTaken({ user }) {
                 setRows(data.map((item, index) => ({
                     id: item.id,
                     index: index + 1,
-                    date: new Date(item.date).toLocaleDateString(),
-                    startTime: item.start_time,
-                    duration: item.duration,
-                    status: item.status,
                     courseName: item.course_name,
                     subject: item.subject,
-                    teacherId: item.teacher_id,
+                    year: item.year,
+                    season: seasonMapping[item.season] || item.season,
+                    teacherName: item.teacher_name,
                 })));
             } catch (error) {
-                console.error('Error fetching courses:', error);
+                console.error("Error fetching courses:", error);
             }
         }
         fetchCourses();
     }, [user]);
 
     const columns = [
-        { field: 'index', headerName: '#', width: 50 },
-        { field: 'date', headerName: 'Date', width: 100 },
-        { field: 'startTime', headerName: 'Start Time', width: 120 },
-        { field: 'duration', headerName: 'Duration', width: 100 },
-        { field: 'status', headerName: 'Status', width: 120 },
-        { field: 'courseName', headerName: 'Course Name', width: 200 },
-        { field: 'subject', headerName: 'Subject', width: 150 },
-        { field: 'teacherId', headerName: 'Teacher ID', width: 120 },
+        { field: "courseName", headerName: "课程名称", flex: 2, minWidth: 150 },
+        { field: "subject", headerName: "科目", flex: 1.5, minWidth: 100 },
+        { field: "year", headerName: "年份", flex: 1, minWidth: 80 },
+        { field: "season", headerName: "学期", flex: 1, minWidth: 80 },
+        { field: "teacherName", headerName: "授课教师", flex: 1, minWidth: 80 },
     ];
 
     return (
         <Box
-            bgcolor="grey.200"
+            bgcolor="white"
             p={2}
-            textAlign="center"
             borderRadius={2}
-            minHeight={300}
+            boxShadow={1}
+            textAlign="center"
+            flex={true}
+            flexDirection={'column'}
         >
-            <Typography variant="h6" color="textSecondary" gutterBottom>
-                All Courses
+            <Typography variant="h6" color="black" gutterBottom>
+                我的课程
             </Typography>
-            <Box sx={{ height: 400, width: '100%' }}>
+            <Box sx={{ width: "100%" }}>
                 <DataGrid
                     rows={rows}
                     columns={columns}
-                    pageSize={5}
-                    rowsPerPageOptions={[5, 10, 20]}
-                    disableSelectionOnClick
+                    getRowHeight={() => 'auto'}
+                    pageSizeOptions={[5, 10, 25]}
+                    sx={{ minHeight: 200, maxHeight: 400 }}
+                    disableRowSelectionOnClick
                 />
+            </Box>
+        </Box>
+    );
+}
+
+function Announcement() {
+    const [announcements, setAnnouncements] = useState([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        const fetchAnnouncements = async () => {
+            try {
+                const response = await fetch('/api/announcements');
+                const data = await response.json();
+                console.log(data);
+                setAnnouncements(data);
+            } catch (error) {
+                console.error('Error fetching announcements:', error);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchAnnouncements();
+    }, []);
+
+    if (loading) {
+        return (
+            <Box
+                bgcolor="white"
+                p={2}
+                borderRadius={2}
+                boxShadow={1}
+                textAlign="center"
+                height={200}
+                display="flex"
+                alignItems="center"
+                justifyContent="center"
+            >
+                <Typography variant="h6" color="textSecondary">
+                    正在加载……
+                </Typography>
+            </Box>
+        );
+    }
+
+    if (announcements.length === 0) {
+        return (
+            <Box
+                bgcolor="white"
+                p={2}
+                borderRadius={2}
+                boxShadow={1}
+                textAlign="center"
+                height={200}
+                display="flex"
+                alignItems="center"
+                justifyContent="center"
+            >
+                <Typography variant="h6" color="textSecondary">
+                    暂无公告
+                </Typography>
+            </Box>
+        );
+    }
+
+    return (
+        <Box
+            bgcolor="white"
+            p={2}
+            borderRadius={2}
+            boxShadow={1}
+            height={200}
+        >
+            <Typography variant="h6" color="black" align="center" gutterBottom>
+                公告栏
+            </Typography>
+            <Box
+                textAlign="left"
+                overflow="auto"
+                height={160}
+                sx={{ wordWrap: 'break-word' }}
+            >
+                {announcements.map(({ id, content, valid_until }) => (
+                    <Box key={id} mb={2}>
+                        <Typography variant="body1" color="black" gutterBottom>
+                            {content}
+                        </Typography>
+                        <Typography variant="caption" color="textSecondary">
+                            有效至：{valid_until ? `${new Date(valid_until).toLocaleString()}` : "永久有效"}
+                        </Typography>
+                    </Box>
+                ))}
             </Box>
         </Box>
     );
@@ -93,6 +221,10 @@ export default function Dashboard() {
                 setUser(data.user);
             } else {
                 setUser(null);
+                setTimeout(() => {
+                    router.push("/");
+                }, 50);
+                return;
             }
         }
 
@@ -107,42 +239,15 @@ export default function Dashboard() {
                     <Typography
                         sx={{ textAlign: "center", fontSize: 30 }}
                     >
-                        Dashboard
+                        个人中心
                     </Typography>
                 </Box>
                 <Grid2 container spacing={3} sx={{ mt: 5, mb: 10 }}>
                     <Grid2 item="true" size={6}>
-                        <Box
-                            bgcolor="white"
-                            p={2}
-                            borderRadius={2}
-                            boxShadow={1}
-                            textAlign="center"
-                        >
-                            <Typography variant="h6">
-                                Hi! {user ? user.username : ""}
-                            </Typography>
-                            <Typography variant="h6">
-                                ID: {user ? user.id : ""}
-                            </Typography>
-                            <Typography variant="h6">
-                                Email: {user ? user.email : ""}
-                            </Typography>
-                        </Box>
+                        <PersonalInfo user={user} />
                     </Grid2>
                     <Grid2 item="true" size={6}>
-                        <Box
-                            bgcolor="white"
-                            p={2}
-                            borderRadius={2}
-                            boxShadow={1}
-                            textAlign="center"
-                        >
-                            <Typography variant="h6">Recent Classes</Typography>
-                            <Typography color="textSecondary">
-                                Classes Placeholder
-                            </Typography>
-                        </Box>
+                        <Announcement />
                     </Grid2>
                     <Grid2 item="true" size={12}>
                         <CoursesTaken user={user} />
