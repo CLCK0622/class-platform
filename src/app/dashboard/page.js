@@ -1,6 +1,6 @@
 "use client";
 
-import { Box, Container, Typography, Grid2 } from "@mui/material";
+import { Box, Container, Typography, Grid2, Link } from "@mui/material";
 import * as React from "react";
 import NavBar from "../components/nav-bar";
 import { useRouter } from "next/navigation";
@@ -71,7 +71,13 @@ function CoursesTaken({ user }) {
     }, [user]);
 
     const columns = [
-        { field: "courseName", headerName: "课程名称", flex: 2, minWidth: 150 },
+        { field: "courseName", headerName: "课程名称", flex: 2, minWidth: 150, 
+            renderCell: (params) => (
+                            <Link underline="hover" href={`/courses/${params.row.id}`} passHref>
+                                <a style={{ textDecoration: "none", color: "blue" }}>{params.value}</a>
+                            </Link>
+                        ),
+         },
         { field: "subject", headerName: "科目", flex: 1.5, minWidth: 100 },
         { field: "year", headerName: "年份", flex: 1, minWidth: 80 },
         { field: "season", headerName: "学期", flex: 1, minWidth: 80 },
@@ -85,21 +91,26 @@ function CoursesTaken({ user }) {
             borderRadius={2}
             boxShadow={1}
             textAlign="center"
-            flex={true}
-            flexDirection={'column'}
         >
             <Typography variant="h6" color="black" gutterBottom>
                 我的课程
             </Typography>
             <Box sx={{ width: "100%" }}>
-                <DataGrid
-                    rows={rows}
-                    columns={columns}
-                    getRowHeight={() => 'auto'}
-                    pageSizeOptions={[5, 10, 25]}
-                    sx={{ minHeight: 200, maxHeight: 400 }}
-                    disableRowSelectionOnClick
-                />
+                <Grid2 container sx={{ justifyContent: "flex-end" }}>
+                    <Grid2 item="true" size={12}>
+                        <DataGrid
+                            rows={rows}
+                            columns={columns}
+                            getRowHeight={() => 'auto'}
+                            pageSizeOptions={[5, 10, 25]}
+                            sx={{ minHeight: 200, maxHeight: 400 }}
+                            disableRowSelectionOnClick
+                        />
+                    </Grid2>
+                    <Grid2 item="true" sx={{ mt: 1 }}>
+                        <Link underline="hover" href="/courses">查看更多→</Link>
+                    </Grid2>
+                </Grid2>
             </Box>
         </Box>
     );

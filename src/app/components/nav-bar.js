@@ -1,6 +1,5 @@
 const { AppBar, Container, Toolbar, Box, IconButton, Menu, MenuItem, Typography, Button, Tooltip, Avatar } = require("@mui/material");
 import * as React from "react";
-import MenuIcon from '@mui/icons-material/Menu';
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Link } from "@mui/material";

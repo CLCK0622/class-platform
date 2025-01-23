@@ -1,6 +1,6 @@
 "use client";
 
-import { Box, Container, Typography, Grid2 } from "@mui/material";
+import { Box, Container, Typography, Grid2, Link } from "@mui/material";
 import * as React from "react";
 import NavBar from "../components/nav-bar";
 import { useRouter } from "next/navigation";
@@ -41,7 +41,14 @@ function CoursesTaken({ user }) {
     }, [user]);
 
     const columns = [
-        { field: "courseName", headerName: "课程名称", flex: 2, minWidth: 150 },
+        {
+            field: "courseName", headerName: "课程名称", flex: 2, minWidth: 150,
+            renderCell: (params) => (
+                <Link underline="hover" href={`/courses/${params.row.id}`} passHref>
+                    <a style={{ textDecoration: "none", color: "blue" }}>{params.value}</a>
+                </Link>
+            ),
+        },
         { field: "subject", headerName: "科目", flex: 1.5, minWidth: 100 },
         { field: "year", headerName: "年份", flex: 1, minWidth: 80 },
         { field: "season", headerName: "学期", flex: 1, minWidth: 80 },
@@ -59,13 +66,13 @@ function CoursesTaken({ user }) {
             flexDirection={'column'}
             sx={{ width: "100%" }}
         >
-                <DataGrid
-                    rows={rows}
-                    columns={columns}
-                    pageSizeOptions={[10, 25, 100]}
-                    sx={{ minHeight: 300, maxHeight: 800 }}
-                    disableRowSelectionOnClick
-                />
+            <DataGrid
+                rows={rows}
+                columns={columns}
+                pageSizeOptions={[10, 25, 100]}
+                sx={{ minHeight: 300, maxHeight: 800 }}
+                disableRowSelectionOnClick
+            />
         </Box>
     );
 }
