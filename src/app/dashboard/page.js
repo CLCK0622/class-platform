@@ -102,7 +102,7 @@ function CoursesTaken({ user }) {
                             rows={rows}
                             columns={columns}
                             getRowHeight={() => 'auto'}
-                            pageSizeOptions={[5, 10, 25]}
+                            pageSizeOptions={[5, 10, 25, 100]}
                             sx={{ minHeight: 200, maxHeight: 400 }}
                             disableRowSelectionOnClick
                         />

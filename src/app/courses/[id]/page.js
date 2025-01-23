@@ -2,32 +2,64 @@
 
 import React, { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { Box, Grid2, Button, Typography, Paper, Container } from '@mui/material';
+import { Box, Grid2, Button, Typography, Paper, Container, Snackbar, Alert, Slide } from '@mui/material';
 import NavBar from '@/app/components/nav-bar';
 import AlertDialog from '@/app/components/confirmation';
 
-function CoursesAndLessons() {
-    const router = useRouter();
+function CoursesAndLessons({ setnoti }) {
     const { id } = useParams();
     const [courseData, setCourseData] = useState(null);
+    const [user, setUser] = React.useState(null);
+    const router = useRouter();
 
     useEffect(() => {
-        async function fetchLessons() {
+        async function fetchSessionLessons() {
             try {
-                const res = await fetch(`/api/userCourses/${id}`);
-                if (!res.ok) throw new Error("Failed to fetch course data");
+                const token = localStorage.getItem("token");
+                if (!token) {
+                    setTimeout(() => {
+                        router.push("/");
+                    }, 50);
+                    return;
+                }
 
-                const data = await res.json();
-                setCourseData(data);
+                const sessionRes = await fetch("/api/session", {
+                    headers: { Authorization: `Bearer ${token}` },
+                });
+
+                if (!sessionRes.ok) {
+                    setUser(null);
+                    setTimeout(() => {
+                        router.push("/");
+                    }, 50);
+                    return;
+                }
+
+                const sessionData = await sessionRes.json();
+                setUser(sessionData.user);
+
+                const courseRes = await fetch(`/api/userCourses/${id}`);
+                if (!courseRes.ok) throw new Error("Failed to fetch course data");
+
+                const courseData = await courseRes.json();
+                console.log(courseData.course.student_list);
+                console.log(sessionData.user.id);
+
+                if (!courseData.course.student_list.includes(sessionData.user.id)) {
+                    setnoti(true);
+                } else {
+                    setCourseData(courseData);
+                }
             } catch (error) {
-                console.error("Error fetching lessons:", error);
+                console.error("Error fetching session or lessons:", error);
             }
         }
 
-        if (id) fetchLessons();
-    }, [id]);
+        fetchSessionLessons();
+    }, [id, router]);
 
-    if (!courseData) return <Typography>Loading...</Typography>;
+
+    if (!courseData) return <Typography>正在加载……</Typography>;
 
     const { course, lessons } = courseData;
 
@@ -44,131 +76,104 @@ function CoursesAndLessons() {
     }
 
     return (
-        <Grid2 container spacing={2}>
-            <Grid2 item="true" size={12}>
-                <Box
-                    bgcolor="white"
-                    p={2}
-                    borderRadius={2}
-                    boxShadow={1}
-                >
-                    <Typography variant="h6">{course.course_name}</Typography>
-                    <Typography>科目：{course.subject}</Typography>
-                    <Typography>年份：{course.year}</Typography>
-                    <Typography>学期：{seasonMapping[course.season]}</Typography>
-                    <AlertDialog
-                        button={<Button
-                            variant="contained"
-                            color="error"
-                            style={{ marginTop: '16px' }}
-                            id='alertButton'
-                        >
-                            退课
-                        </Button>}
-                        title={`确定要退出${course.course_name}吗？`}
-                        description={<><Typography>退出{course.year}年{course.season}的{course.course_name}后，你将无法继续查看该课程内容。</Typography><Typography>退课后，请及时与管理员协商退费事宜。</Typography></>}
-                        agreeAction={handleDropCourse}
-                    />
-                </Box>
-            </Grid2>
+        <>
+            <Grid2 container spacing={2}>
+                <Grid2 item="true" size={12}>
+                    <Box
+                        bgcolor="white"
+                        p={2}
+                        borderRadius={2}
+                        boxShadow={1}
+                    >
+                        <Typography variant="h6">{course.course_name}</Typography>
+                        <Typography>科目：{course.subject}</Typography>
+                        <Typography>年份：{course.year}</Typography>
+                        <Typography>学期：{seasonMapping[course.season]}</Typography>
+                        <AlertDialog
+                            button={<Button
+                                variant="contained"
+                                color="error"
+                                style={{ marginTop: '16px' }}
+                                id='alertButton'
+                            >
+                                退课
+                            </Button>}
+                            title={`确定要退出${course.course_name}吗？`}
+                            description={<><Typography>退出{course.year}年{course.season}的{course.course_name}后，你将无法继续查看该课程内容。</Typography><Typography>退课后，请及时与管理员协商退费事宜。</Typography></>}
+                            agreeAction={handleDropCourse}
+                        />
+                    </Box>
+                </Grid2>
 
-            <Grid2 item="true" size={12}>
-                <Box
-                    bgcolor="white"
-                    p={2}
-                    borderRadius={2}
-                    boxShadow={1}
-                >
-                    <Typography variant="h6">课程列表</Typography>
-                    <Grid2 container spacing={2} marginTop={2}>
-                        {lessons.map((lesson) => {
-                            const isPast = new Date(lesson.date) < Date.now();
-                            const cancelled = lesson.status === "cancelled";
-                            const replayAvailable = lesson.replay_link !== null;
-                            return (
-                                <Grid2
-                                    item="true"
-                                    size={12}
-                                    key={lesson.id}
-                                    style={{
-                                        color: (isPast || cancelled) ? 'gray' : 'black',
-                                    }}
-                                >
-                                    <Box display="flex" justifyContent="space-between" alignItems="center" sx={{ wordWrap: 'break-word' }}>
-                                        <Grid2 container direction={'column'}>
-                                            <Grid2 item="true" size={12}>
-                                                <Typography sx={{ justifySelf: "flex-start", textDecoration: (cancelled ? "line-through" : "") }}>
-                                                    {lesson.name}
-                                                </Typography>
+                <Grid2 item="true" size={12}>
+                    <Box
+                        bgcolor="white"
+                        p={2}
+                        borderRadius={2}
+                        boxShadow={1}
+                    >
+                        <Typography variant="h6">课程列表</Typography>
+                        <Grid2 container spacing={2} marginTop={2}>
+                            {lessons.map((lesson) => {
+                                const isPast = new Date(lesson.date) < Date.now();
+                                const cancelled = lesson.status === "cancelled";
+                                const replayAvailable = lesson.replay_link !== null;
+                                return (
+                                    <Grid2
+                                        item="true"
+                                        size={12}
+                                        key={lesson.id}
+                                        style={{
+                                            color: (isPast || cancelled) ? 'gray' : 'black',
+                                        }}
+                                    >
+                                        <Box display="flex" justifyContent="space-between" alignItems="center" sx={{ wordWrap: 'break-word' }}>
+                                            <Grid2 container direction={'column'}>
+                                                <Grid2 item="true" size={12}>
+                                                    <Typography sx={{ justifySelf: "flex-start", textDecoration: (cancelled ? "line-through" : "") }}>
+                                                        {lesson.name}
+                                                    </Typography>
+                                                </Grid2>
+                                                <Grid2 item="true" size={12}>
+                                                    <Typography sx={{ justifySelf: "flex-start", textDecoration: (cancelled ? "line-through" : "") }}>
+                                                        日期：{new Date(`${lesson.date}`).toLocaleString("zh-CN", { year: "numeric", month: "numeric", day: "numeric" })} 开始时间：{lesson.start_time} 持续时间：{lesson.duration.hours || "00"}:{lesson.duration.minutes || "00"}:{lesson.duration.seconds || "00"}
+                                                    </Typography>
+                                                </Grid2>
                                             </Grid2>
-                                            <Grid2 item="true" size={12}>
-                                                <Typography sx={{ justifySelf: "flex-start", textDecoration: (cancelled ? "line-through" : "") }}>
-                                                    日期：{new Date(`${lesson.date}`).toLocaleString("zh-CN", { year: "numeric", month: "numeric", day: "numeric" })} 开始时间：{lesson.start_time} 持续时间：{lesson.duration.hours || "00"}:{lesson.duration.minutes || "00"}:{lesson.duration.seconds || "00"}
-                                                </Typography>
-                                            </Grid2>
-                                        </Grid2>
-                                        <Box sx={{ justifySelf: "flex-end" }}>
-                                            <Button
-                                                variant="outlined"
-                                                disabled={isPast || cancelled}
-                                                style={{ marginRight: '8px' }}
-                                            >
-                                                请假
-                                            </Button>
-                                            <Button
-                                                variant="outlined"
-                                                disabled={isPast || cancelled}
-                                                style={{ marginRight: '8px' }}
-                                            >
-                                                调课
-                                            </Button>
-                                            <Button variant="outlined" disabled={!replayAvailable || cancelled} href={lesson.replay_link} target='_blank'>
-                                                查看回放
-                                            </Button>
+                                            <Box sx={{ justifySelf: "flex-end" }}>
+                                                <Button
+                                                    variant="outlined"
+                                                    disabled={isPast || cancelled}
+                                                    style={{ marginRight: '8px' }}
+                                                >
+                                                    请假
+                                                </Button>
+                                                <Button
+                                                    variant="outlined"
+                                                    disabled={isPast || cancelled}
+                                                    style={{ marginRight: '8px' }}
+                                                >
+                                                    调课
+                                                </Button>
+                                                <Button variant="outlined" disabled={!replayAvailable || cancelled} href={lesson.replay_link} target='_blank'>
+                                                    查看回放
+                                                </Button>
+                                            </Box>
                                         </Box>
-                                    </Box>
-                                </Grid2>
-                            );
-                        })}
-                    </Grid2>
-                </Box>
+                                    </Grid2>
+                                );
+                            })}
+                        </Grid2>
+                    </Box>
+                </Grid2>
             </Grid2>
-        </Grid2>
+        </>
     );
 }
 
 export default function CoursePage() {
+    const [notiOpen, setNoti] = React.useState(false);
     const router = useRouter();
-    const [user, setUser] = React.useState(null);
-
-    useEffect(() => {
-        async function fetchSession() {
-            const token = localStorage.getItem("token");
-            if (!token) {
-                setTimeout(() => {
-                    router.push("/");
-                }, 50);
-                return;
-            }
-
-            const res = await fetch("/api/session", {
-                headers: { Authorization: `Bearer ${token}` },
-            });
-
-            if (res.ok) {
-                const data = await res.json();
-                setUser(data.user);
-            } else {
-                setUser(null);
-                setTimeout(() => {
-                    router.push("/");
-                }, 50);
-                return;
-            }
-        }
-
-        fetchSession();
-    }, []);
 
     return (
         <>
@@ -182,8 +187,18 @@ export default function CoursePage() {
                     </Typography>
                 </Box>
                 <Box sx={{ mt: 5, mb: 10 }}>
-                    <CoursesAndLessons />
+                    <CoursesAndLessons setnoti={setNoti} />
                 </Box>
+                <Snackbar
+                    open={notiOpen}
+                    autoHideDuration={3000}
+                    TransitionComponent={props => <Slide {...props} direction="right" />}
+                    onClose={() => { setNoti(false); router.push("/dashboard"); return; }}
+                >
+                    <Alert severity='error' variant='filled' sx={{ width: '100%' }}>
+                        你没有报名这节课！
+                    </Alert>
+                </Snackbar>
             </Container >
         </>
     );
