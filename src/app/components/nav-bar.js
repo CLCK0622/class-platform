@@ -161,14 +161,14 @@ function NavBar() {
                             open={Boolean(anchorElUser)}
                             onClose={handleCloseUserMenu}
                         >
-                            <MenuItem>
-                            <Link color="inherit" underline="none" sx={{ textAlign: 'center' }} href={"/courses"}>我的课程</Link>
-                            </MenuItem>
-                            <MenuItem>
-                                <Link color="inherit" underline="none" sx={{ textAlign: 'center' }} href={"/dashboard"}>个人中心</Link>
-                            </MenuItem>
-                            <MenuItem>
-                                <Typography sx={{ textAlign: 'center' }} onClick={handleLogout}>登出</Typography>
+                            <Link color="inherit" underline="none" sx={{ textAlign: 'center' }} href={"/courses"}>
+                                <MenuItem>我的课程</MenuItem>
+                            </Link>
+                            <Link color="inherit" underline="none" sx={{ textAlign: 'center' }} href={"/dashboard"}>
+                                <MenuItem>个人中心</MenuItem>
+                            </Link>
+                            <MenuItem sx={{ textAlign: 'center' }} onClick={handleLogout}>
+                                登出
                             </MenuItem>
                         </Menu>
                     </Box>

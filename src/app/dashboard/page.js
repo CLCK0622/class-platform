@@ -73,8 +73,8 @@ function CoursesTaken({ user }) {
     const columns = [
         { field: "courseName", headerName: "课程名称", flex: 2, minWidth: 150, 
             renderCell: (params) => (
-                            <Link underline="hover" href={`/courses/${params.row.id}`} passHref>
-                                <a style={{ textDecoration: "none", color: "blue" }}>{params.value}</a>
+                            <Link underline="hover" href={`/courses/${params.row.id}`}>
+                                {params.value}
                             </Link>
                         ),
          },

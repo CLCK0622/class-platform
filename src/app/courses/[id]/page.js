@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { Box, Grid2, Button, Typography, Paper, Container, Snackbar, Alert, Slide } from '@mui/material';
+import { Box, Grid2, Button, Typography, Paper, Container, Snackbar, Alert, Slide, TextField } from '@mui/material';
 import NavBar from '@/app/components/nav-bar';
 import AlertDialog from '@/app/components/confirmation';
 
@@ -10,6 +10,7 @@ function CoursesAndLessons({ setnoti }) {
     const { id } = useParams();
     const [courseData, setCourseData] = useState(null);
     const [user, setUser] = React.useState(null);
+    const [infoChanged, setInfoChanged] = React.useState(false);
     const router = useRouter();
 
     useEffect(() => {
@@ -44,8 +45,8 @@ function CoursesAndLessons({ setnoti }) {
                 const courseData = await courseRes.json();
                 console.log(courseData.course.student_list);
                 console.log(sessionData.user.id);
-
-                if (!courseData.course.student_list.includes(sessionData.user.id)) {
+                console.log(sessionData.user);
+                if (!courseData.course.student_list.includes(sessionData.user.id) && sessionData.user.role === "student") {
                     setnoti(true);
                 } else {
                     setCourseData(courseData);
@@ -68,6 +69,12 @@ function CoursesAndLessons({ setnoti }) {
         alert('Course dropped!');
     };
 
+    const changeCourseInfo = () => {
+        //wip
+        alert('Course changed!')
+        window.location.reload();
+    }
+
     const seasonMapping = {
         1: "春季",
         2: "夏季",
@@ -85,23 +92,55 @@ function CoursesAndLessons({ setnoti }) {
                         borderRadius={2}
                         boxShadow={1}
                     >
-                        <Typography variant="h6">{course.course_name}</Typography>
-                        <Typography>科目：{course.subject}</Typography>
-                        <Typography>年份：{course.year}</Typography>
-                        <Typography>学期：{seasonMapping[course.season]}</Typography>
-                        <AlertDialog
-                            button={<Button
-                                variant="contained"
-                                color="error"
-                                style={{ marginTop: '16px' }}
-                                id='alertButton'
-                            >
-                                退课
-                            </Button>}
-                            title={`确定要退出${course.course_name}吗？`}
-                            description={<><Typography>退出{course.year}年{course.season}的{course.course_name}后，你将无法继续查看该课程内容。</Typography><Typography>退课后，请及时与管理员协商退费事宜。</Typography></>}
-                            agreeAction={handleDropCourse}
-                        />
+                        {user.role === "student" ?
+                            <>
+                                <Typography variant="h6">{course.course_name}</Typography>
+                                <Typography>科目：{course.subject}</Typography>
+                                <Typography>年份：{course.year}</Typography>
+                                <Typography>学期：{seasonMapping[course.season]}</Typography>
+                                <AlertDialog
+                                    button={<Button
+                                        variant="contained"
+                                        color="error"
+                                        style={{ marginTop: '16px' }}
+                                        id='alertButton'
+                                    >
+                                        退课
+                                    </Button>}
+                                    title={`确定要退出${course.course_name}吗？`}
+                                    description={<><Typography>退出{course.year}年{seasonMapping[course.season]}的{course.course_name}后，你将无法继续查看该课程内容。</Typography><Typography>退课后，请及时与管理员协商退费事宜。</Typography></>}
+                                    agreeAction={handleDropCourse}
+                                /></> : <>
+                                <Box component="form">
+                                    <TextField variant='standard' label="课程名称" defaultValue={course.course_name} onChange={() => { setInfoChanged(true); }} />
+                                    <TextField variant='standard' label="科目" defaultValue={course.subject} onChange={() => { setInfoChanged(true); }} />
+                                    <TextField variant='standard' label="课程名称" defaultValue={course.course_name} onChange={() => { setInfoChanged(true); }} />
+                                    <TextField variant='standard' label="课程名称" defaultValue={course.course_name} onChange={() => { setInfoChanged(true); }} />
+                                    <AlertDialog
+                                        button={<Button
+                                            variant="outlined"
+                                            style={{ marginTop: '16px' }}
+                                            id='alertButton'
+                                            disabled={!infoChanged}
+                                        >
+                                            确认
+                                        </Button>}
+                                        title={`确定要修改该课程信息吗？`}
+                                        description={<><Typography>请确认填写的信息正确，修改后，所有人可见。</Typography></>}
+                                        agreeAction={changeCourseInfo}
+                                    />
+                                    <Button
+                                        variant="outlined"
+                                        color="error"
+                                        style={{ marginTop: '16px' }}
+                                        disabled={!infoChanged}
+                                        onClick={() => { window.location.reload(); }}
+                                    >
+                                        取消
+                                    </Button>
+                                </Box>
+                            </>
+                        }
                     </Box>
                 </Grid2>
 
