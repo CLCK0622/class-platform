@@ -71,13 +71,94 @@ function CoursesTaken({ user }) {
     }, [user]);
 
     const columns = [
-        { field: "courseName", headerName: "课程名称", flex: 2, minWidth: 150, 
+        {
+            field: "courseName", headerName: "课程名称", flex: 2, minWidth: 150,
             renderCell: (params) => (
-                            <Link underline="hover" href={`/courses/${params.row.id}`}>
-                                {params.value}
-                            </Link>
-                        ),
-         },
+                <Link underline="hover" href={`/courses/${params.row.id}`}>
+                    {params.value}
+                </Link>
+            ),
+        },
+        { field: "subject", headerName: "科目", flex: 1.5, minWidth: 100 },
+        { field: "year", headerName: "年份", flex: 1, minWidth: 80 },
+        { field: "season", headerName: "学期", flex: 1, minWidth: 80 },
+        { field: "teacherName", headerName: "授课教师", flex: 1, minWidth: 80 },
+    ];
+
+    return (
+        <Box
+            bgcolor="white"
+            p={2}
+            borderRadius={2}
+            boxShadow={1}
+            textAlign="center"
+        >
+            <Typography variant="h6" color="black" gutterBottom>
+                我的课程
+            </Typography>
+            <Box sx={{ width: "100%" }}>
+                <Grid2 container sx={{ justifyContent: "flex-end" }}>
+                    <Grid2 item="true" size={12}>
+                        <DataGrid
+                            rows={rows}
+                            columns={columns}
+                            getRowHeight={() => 'auto'}
+                            pageSizeOptions={[5, 10, 25, 100]}
+                            sx={{ minHeight: 200, maxHeight: 400 }}
+                            disableRowSelectionOnClick
+                        />
+                    </Grid2>
+                    <Grid2 item="true" sx={{ mt: 1 }}>
+                        <Link underline="hover" href="/courses">查看更多→</Link>
+                    </Grid2>
+                </Grid2>
+            </Box>
+        </Box>
+    );
+}
+
+function AllCourses({ user }) {
+    const [rows, setRows] = useState([]);
+
+    const seasonMapping = {
+        1: "春季",
+        2: "夏季",
+        3: "秋季",
+        4: "冬季",
+    };
+
+    useEffect(() => {
+        if (!user) return;
+
+        async function fetchCourses() {
+            try {
+                const response = await fetch(`/api/userCourses/all`);
+                const data = await response.json();
+                setRows(data.map((item, index) => ({
+                    id: item.id,
+                    index: index + 1,
+                    courseName: item.course_name,
+                    subject: item.subject,
+                    year: item.year,
+                    season: seasonMapping[item.season] || item.season,
+                    teacherName: item.teacher_name,
+                })));
+            } catch (error) {
+                console.error("Error fetching courses:", error);
+            }
+        }
+        fetchCourses();
+    }, [user]);
+
+    const columns = [
+        {
+            field: "courseName", headerName: "课程名称", flex: 2, minWidth: 150,
+            renderCell: (params) => (
+                <Link underline="hover" href={`/courses/${params.row.id}`}>
+                    {params.value}
+                </Link>
+            ),
+        },
         { field: "subject", headerName: "科目", flex: 1.5, minWidth: 100 },
         { field: "year", headerName: "年份", flex: 1, minWidth: 80 },
         { field: "season", headerName: "学期", flex: 1, minWidth: 80 },
@@ -261,7 +342,9 @@ export default function Dashboard() {
                         <Announcement />
                     </Grid2>
                     <Grid2 item="true" size={12}>
-                        <CoursesTaken user={user} />
+                        {user && user.role === "admin" ?
+                            <AllCourses user={user} /> : <CoursesTaken user={user} />
+                        }
                     </Grid2>
                 </Grid2>
             </Container >

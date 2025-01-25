@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { Box, Grid2, Button, Typography, Paper, Container, Snackbar, Alert, Slide, TextField } from '@mui/material';
+import { Box, Grid2, Button, Typography, Paper, Container, Snackbar, Alert, Slide, TextField, MenuItem } from '@mui/material';
 import NavBar from '@/app/components/nav-bar';
 import AlertDialog from '@/app/components/confirmation';
 
@@ -12,6 +12,11 @@ function CoursesAndLessons({ setnoti }) {
     const [user, setUser] = React.useState(null);
     const [infoChanged, setInfoChanged] = React.useState(false);
     const router = useRouter();
+
+    const [cName, setCName] = React.useState(null);
+    const [cSubject, setCSubject] = React.useState(null);
+    const [cYear, setCYear] = React.useState(null);
+    const [cSeason, setCSeason] = React.useState(null);
 
     useEffect(() => {
         async function fetchSessionLessons() {
@@ -69,10 +74,16 @@ function CoursesAndLessons({ setnoti }) {
         alert('Course dropped!');
     };
 
-    const changeCourseInfo = () => {
-        //wip
-        alert('Course changed!')
-        window.location.reload();
+    const changeCourseInfo = async () => {
+        const res = await fetch(`/api/userCourses/modify?name=${cName}&subject=${cSubject}&year=${cYear}&season=${cSeason}`);
+        if (res.ok) {
+            alert('Course changed!');
+            window.location.reload();
+        } else {
+            alert('Course change failed. Please try again later.');
+            console.log(res.error);
+            window.location.reload();
+        }
     }
 
     const seasonMapping = {
@@ -81,6 +92,13 @@ function CoursesAndLessons({ setnoti }) {
         3: "秋季",
         4: "冬季"
     }
+
+    const seasonChoices = [
+        { label: "春季", value: 1 },
+        { label: "夏季", value: 2 },
+        { label: "秋季", value: 3 },
+        { label: "冬季", value: 4 },
+    ]
 
     return (
         <>
@@ -112,32 +130,51 @@ function CoursesAndLessons({ setnoti }) {
                                     agreeAction={handleDropCourse}
                                 /></> : <>
                                 <Box component="form">
-                                    <TextField variant='standard' label="课程名称" defaultValue={course.course_name} onChange={() => { setInfoChanged(true); }} />
-                                    <TextField variant='standard' label="科目" defaultValue={course.subject} onChange={() => { setInfoChanged(true); }} />
-                                    <TextField variant='standard' label="课程名称" defaultValue={course.course_name} onChange={() => { setInfoChanged(true); }} />
-                                    <TextField variant='standard' label="课程名称" defaultValue={course.course_name} onChange={() => { setInfoChanged(true); }} />
-                                    <AlertDialog
-                                        button={<Button
-                                            variant="outlined"
-                                            style={{ marginTop: '16px' }}
-                                            id='alertButton'
-                                            disabled={!infoChanged}
-                                        >
-                                            确认
-                                        </Button>}
-                                        title={`确定要修改该课程信息吗？`}
-                                        description={<><Typography>请确认填写的信息正确，修改后，所有人可见。</Typography></>}
-                                        agreeAction={changeCourseInfo}
-                                    />
-                                    <Button
-                                        variant="outlined"
-                                        color="error"
-                                        style={{ marginTop: '16px' }}
-                                        disabled={!infoChanged}
-                                        onClick={() => { window.location.reload(); }}
-                                    >
-                                        取消
-                                    </Button>
+                                    <Grid2 container>
+                                        <Grid2 item="true" size={12} sx={{ mb: 1 }}>
+                                            <TextField required={true} variant='standard' label="课程名称" defaultValue={course.course_name} onChange={(e) => { setInfoChanged(true); setCName(e.target.value); }} />
+                                        </Grid2>
+                                        <Grid2 item="true" size={12} sx={{ mt: 1, mb: 1 }}>
+                                            <TextField required={true} variant='standard' label="科目" defaultValue={course.subject} onChange={(e) => { setInfoChanged(true); setCSubject(e.target.value); }} />
+                                        </Grid2>
+                                        <Grid2 item="true" size={12} sx={{ mt: 1, mb: 1 }}>
+                                            <TextField required={true} variant='standard' label="年份" defaultValue={course.year} onChange={(e) => { setInfoChanged(true); setCYear(e.target.value); }} />
+                                        </Grid2>
+                                        <Grid2 item="true" size={12} sx={{ mt: 1, mb: 1 }}>
+                                            <TextField required={true} select variant='standard' label="学期" defaultValue={course.season} onChange={(e) => { setInfoChanged(true); setCSeason(e.target.value); }} >
+                                                {seasonChoices.map((option) => (
+                                                    <MenuItem key={option.value} value={option.value}>
+                                                        {option.label}
+                                                    </MenuItem>
+                                                ))}
+                                            </TextField>
+                                        </Grid2>
+                                        <Grid2 item="true" size={12}>
+                                            <AlertDialog
+                                                button={<Button
+                                                    variant="outlined"
+                                                    style={{ marginTop: '16px' }}
+                                                    id='alertButton'
+                                                    onSubmit={() => { }}
+                                                    disabled={!infoChanged}
+                                                >
+                                                    确认
+                                                </Button>}
+                                                title={`确定要修改该课程信息吗？`}
+                                                description={<><Typography>请确认填写的信息正确，修改后，所有人可见。</Typography></>}
+                                                agreeAction={changeCourseInfo}
+                                            />
+                                            <Button
+                                                variant="outlined"
+                                                color="error"
+                                                style={{ marginTop: '16px' }}
+                                                disabled={!infoChanged}
+                                                onClick={() => { window.location.reload(); }}
+                                            >
+                                                取消
+                                            </Button>
+                                        </Grid2>
+                                    </Grid2>
                                 </Box>
                             </>
                         }
