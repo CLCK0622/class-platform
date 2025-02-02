@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { Box, Grid2, Button, Typography, Paper, Container, Snackbar, Alert, Slide, TextField, MenuItem } from '@mui/material';
+import { Box, Grid2, Button, Typography, Container, Snackbar, Alert, Slide, TextField, MenuItem, Autocomplete, Checkbox } from '@mui/material';
 import NavBar from '@/app/components/nav-bar';
 import AlertDialog from '@/app/components/confirmation';
 
@@ -12,6 +12,14 @@ function CoursesAndLessons({ setnoti }) {
     const [user, setUser] = React.useState(null);
     const [infoChanged, setInfoChanged] = React.useState(false);
     const router = useRouter();
+    const [students, setStudents] = useState([]);
+    const [selectedStudents, setSelectedStudents] = useState([]);
+
+    const handleSelectionChange = (event, newValue) => {
+        setSelectedStudents(newValue);
+        setInfoChanged(true);
+        console.log('Selected student IDs:', newValue.map(student => student.id));
+    };
 
     const [cName, setCName] = React.useState(null);
     const [cSubject, setCSubject] = React.useState(null);
@@ -56,6 +64,18 @@ function CoursesAndLessons({ setnoti }) {
                 } else {
                     setCourseData(courseData);
                 }
+
+                const response = await fetch('/api/users');
+                if (!response.ok) {
+                    throw new Error('Failed to fetch students');
+                }
+                const data = await response.json();
+                setStudents(data.data);
+                const selectedStudents = courseData.course.student_list.map(id =>
+                    data.data.find(student => student.id === id)
+                );
+                setSelectedStudents(selectedStudents);
+                console.log('Student data fetched!', data);
             } catch (error) {
                 console.error("Error fetching session or lessons:", error);
             }
@@ -64,8 +84,7 @@ function CoursesAndLessons({ setnoti }) {
         fetchSessionLessons();
     }, [id, router]);
 
-
-    if (!courseData) return <Typography>正在加载……</Typography>;
+    if (!courseData || students.length == 0) return <Typography>正在加载……</Typography>;
 
     const { course, lessons } = courseData;
 
@@ -75,7 +94,14 @@ function CoursesAndLessons({ setnoti }) {
     };
 
     const changeCourseInfo = async () => {
-        const res = await fetch(`/api/userCourses/modify?name=${cName}&subject=${cSubject}&year=${cYear}&season=${cSeason}`);
+        const res = await fetch(`/api/userCourses/modify`, {
+            method: "POST",
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ id: id, cName: cName || course.course_name, cSubject: cSubject || course.subject, cYear: cYear || course.year, cSeason: cSeason || course.season, student_list: selectedStudents }),
+        }
+        );
         if (res.ok) {
             alert('Course changed!');
             window.location.reload();
@@ -149,11 +175,31 @@ function CoursesAndLessons({ setnoti }) {
                                                 ))}
                                             </TextField>
                                         </Grid2>
+                                        <Grid2 item="true" size={12} sx={{ mt: 1 }}>
+                                            <Autocomplete
+                                                multiple
+                                                id="student-selector"
+                                                options={students}
+                                                getOptionLabel={(option) => option.username}
+                                                value={selectedStudents}
+                                                onChange={handleSelectionChange}
+                                                disableCloseOnSelect
+                                                renderOption={(props, option, { selected }) => (
+                                                    <li {...props}>
+                                                        <Checkbox checked={selected} style={{ marginRight: 8 }} />
+                                                        {option.username}
+                                                    </li>
+                                                )}
+                                                renderInput={(params) => (
+                                                    <TextField {...params} label="学生列表" />
+                                                )}
+                                            />
+                                        </Grid2>
                                         <Grid2 item="true" size={12}>
                                             <AlertDialog
                                                 button={<Button
                                                     variant="outlined"
-                                                    style={{ marginTop: '16px' }}
+                                                    style={{ marginTop: '16px', marginRight: '10px' }}
                                                     id='alertButton'
                                                     onSubmit={() => { }}
                                                     disabled={!infoChanged}
@@ -218,20 +264,18 @@ function CoursesAndLessons({ setnoti }) {
                                             </Grid2>
                                             <Box sx={{ justifySelf: "flex-end" }}>
                                                 <Button
-                                                    variant="outlined"
                                                     disabled={isPast || cancelled}
                                                     style={{ marginRight: '8px' }}
                                                 >
                                                     请假
                                                 </Button>
                                                 <Button
-                                                    variant="outlined"
                                                     disabled={isPast || cancelled}
                                                     style={{ marginRight: '8px' }}
                                                 >
                                                     调课
                                                 </Button>
-                                                <Button variant="outlined" disabled={!replayAvailable || cancelled} href={lesson.replay_link} target='_blank'>
+                                                <Button disabled={!replayAvailable || cancelled} href={lesson.replay_link} target='_blank'>
                                                     查看回放
                                                 </Button>
                                             </Box>

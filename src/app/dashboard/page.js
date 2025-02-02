@@ -1,6 +1,6 @@
 "use client";
 
-import { Box, Container, Typography, Grid2, Link } from "@mui/material";
+import { Box, Container, Typography, Grid2, Link, Button } from "@mui/material";
 import * as React from "react";
 import NavBar from "../components/nav-bar";
 import { useRouter } from "next/navigation";
@@ -132,7 +132,7 @@ function AllCourses({ user }) {
 
         async function fetchCourses() {
             try {
-                const response = await fetch(`/api/userCourses/all`);
+                const response = await (user.role == "student" ? fetch(`/api/userCourses?userId=${user.id}`) : fetch(`/api/userCourses/all`));
                 const data = await response.json();
                 setRows(data.map((item, index) => ({
                     id: item.id,
@@ -197,9 +197,10 @@ function AllCourses({ user }) {
     );
 }
 
-function Announcement() {
+function Announcement({ user }) {
     const [announcements, setAnnouncements] = useState([]);
     const [loading, setLoading] = useState(true);
+    const router = useRouter();
 
     useEffect(() => {
         const fetchAnnouncements = async () => {
@@ -266,9 +267,16 @@ function Announcement() {
             boxShadow={1}
             height={200}
         >
-            <Typography variant="h6" color="black" align="center" gutterBottom>
-                公告栏
-            </Typography>
+            <Box display={"flex"} alignItems={"center"} justifyContent={"center"} sx={{ mb: 1 }}>
+                <Typography variant="h6" color="black">
+                    公告栏
+                </Typography>
+                {user.role == "admin" ? <Button variant="outlined" sx={{ height: 30, ml: 1 }} onClick={() => {
+                    setTimeout(() => {
+                        router.push("/announcement");
+                    }, 50);
+                }}>修改</Button> : ""}
+            </Box>
             <Box
                 textAlign="left"
                 overflow="auto"
@@ -276,14 +284,15 @@ function Announcement() {
                 sx={{ wordWrap: 'break-word' }}
             >
                 {announcements.map(({ id, content, valid_until }) => (
-                    <Box key={id} mb={2}>
-                        <Typography variant="body1" color="black" gutterBottom>
-                            {content}
-                        </Typography>
-                        <Typography variant="caption" color="textSecondary">
-                            有效至：{valid_until ? `${new Date(valid_until).toLocaleString()}` : "永久有效"}
-                        </Typography>
-                    </Box>
+                    Date.now() < new Date(valid_until) || valid_until == null ?
+                        <Box key={id} mb={2}>
+                            <Typography variant="body1" color="black" gutterBottom>
+                                {content}
+                            </Typography>
+                            <Typography variant="caption" color="textSecondary">
+                                有效至：{valid_until ? `${new Date(valid_until).toLocaleString()}` : "永久有效"}
+                            </Typography>
+                        </Box> : <></>
                 ))}
             </Box>
         </Box>
@@ -335,11 +344,11 @@ export default function Dashboard() {
                     </Typography>
                 </Box>
                 <Grid2 container spacing={3} sx={{ mt: 5, mb: 10 }}>
-                    <Grid2 item="true" size={6}>
+                    <Grid2 item="true" size={{lg: 6, xs: 12}}>
                         <PersonalInfo user={user} />
                     </Grid2>
-                    <Grid2 item="true" size={6}>
-                        <Announcement />
+                    <Grid2 item="true" size={{lg: 6, xs: 12}}>
+                        <Announcement user={user} />
                     </Grid2>
                     <Grid2 item="true" size={12}>
                         {user && user.role === "admin" ?

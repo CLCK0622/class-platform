@@ -22,7 +22,7 @@ function CoursesTaken({ user }) {
 
         async function fetchCourses() {
             try {
-                const response = await fetch(`/api/userCourses?userId=${user.id}`);
+                const response = await (user.role == "student" ? fetch(`/api/userCourses?userId=${user.id}`) : fetch(`/api/userCourses/all`));
                 const data = await response.json();
                 setRows(data.map((item, index) => ({
                     id: item.id,
@@ -64,7 +64,6 @@ function CoursesTaken({ user }) {
             textAlign="center"
             flex={true}
             flexDirection={'column'}
-            sx={{ width: "100%" }}
         >
             <DataGrid
                 rows={rows}
