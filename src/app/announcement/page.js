@@ -1,6 +1,6 @@
 "use client";
 
-import { Box, Container, Typography, Grid2, Link, Button, TextField } from "@mui/material";
+import { Box, Container, Typography, Grid2, Link, Button, TextField, FormControlLabel, Switch, Snackbar, Alert } from "@mui/material";
 import * as React from "react";
 import NavBar from "../components/nav-bar";
 import { useRouter } from "next/navigation";
@@ -9,13 +9,91 @@ import AlertDialog from "../components/confirmation";
 import { AdapterLuxon } from '@mui/x-date-pickers/AdapterLuxon';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { DateTimePicker } from "@mui/x-date-pickers";
-import { renderTimeViewClock } from '@mui/x-date-pickers/timeViewRenderers';
+
+function CreateAnnouncement({ user }) {
+    const [newContent, setNewContent] = useState('');
+    const [newValidUntil, setNewValidUntil] = useState(null);
+    const [newStick, setStick] = useState(false);
+    const [createSuccessNoti, successNoti] = useState(false);
+
+    const handleCreateAnnouncement = async () => {
+        const res = await fetch(`/api/announcements/create`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ content: newContent, valid_until: newValidUntil, stick: newStick }),
+        });
+        const data = await res.json();
+        if (res.ok) {
+            console.log("Announcement created:", data);
+            successNoti(true);
+        } else {
+            console.error("Failed to create announcement:", data.message);
+        }
+    }
+
+    return (
+        <Box
+            bgcolor="white"
+            p={2}
+            borderRadius={2}
+            boxShadow={1}
+            sx={{ mb: 3 }}
+        >
+            {user.role == "admin" ?
+                <Box>
+                    <TextField
+                        label="公告内容"
+                        multiline
+                        fullWidth
+                        rows={4}
+                        onChange={(e) => setNewContent(e.target.value)}
+                    />
+                    <Box display={"flex"} flexDirection={"row"} justifyContent={"space-between"} alignItems={"center"} sx={{ mt: 2 }}>
+                        <Box display={"flex"} alignItems={"center"}>
+                            <LocalizationProvider dateAdapter={AdapterLuxon}>
+                                <DateTimePicker
+                                    label="有效至"
+                                    value={newValidUntil}
+                                    ampm={false}
+                                    views={['year', 'month', 'day']}
+                                    onChange={(newValue) => setNewValidUntil(newValue)}
+                                    slotProps={{ textField: { fullWidth: "true" } }}
+                                />
+                            </LocalizationProvider>
+                            <FormControlLabel control={<Switch value={newStick} onChange={(e) => { setStick(e.target.value) }} />} label="置顶公告" labelPlacement="start" />
+                        </Box>
+                        <AlertDialog
+                            button={<Button variant="outlined" onClick={handleCreateAnnouncement}>创建公告</Button>}
+                            title={`确定要创建该公告吗？`}
+                            description={<><Typography>请确认操作正确，创建后，该公告全体可见。</Typography>
+                                <Typography>公告内容：{newContent}</Typography>
+                                <Typography>有效期至：{String(newValidUntil)}</Typography>
+                                <Typography>置顶：{newStick ? "是" : "否"}</Typography></>}
+                            agreeAction={handleCreateAnnouncement}
+                        />
+                    </Box>
+                    <Snackbar open={createSuccessNoti} autoHideDuration={1000} onClose={() => { window.location.reload(); }}>
+                        <Alert
+                            onClose={() => { window.location.reload(); }}
+                            severity="success"
+                            variant="filled"
+                            sx={{ width: '100%' }}
+                        >
+                            公告创建成功！
+                        </Alert>
+                    </Snackbar>
+                </Box> : <></>
+            }
+        </Box>
+    )
+}
 
 function Announcement({ user }) {
     const [announcements, setAnnouncements] = useState([]);
     const [loading, setLoading] = useState(true);
-    const [newContent, setNewContent] = useState('');
-    const [newValidUntil, setNewValidUntil] = useState(null);
+    const [deleteSuccessNoti, setDeleteSuccessNoti] = useState(false);
 
     useEffect(() => {
         const fetchAnnouncements = async () => {
@@ -42,7 +120,7 @@ function Announcement({ user }) {
         });
 
         if (response.ok) {
-            window.location.reload();
+            setDeleteSuccessNoti(true);
         } else {
             const data = await response.json();
             console.error('Error deleting announcement:', data.message);
@@ -69,39 +147,12 @@ function Announcement({ user }) {
         );
     }
 
+    console.log(announcements);
+
     if (announcements.length === 0) {
         return (
             <>
-                <Box
-                    bgcolor="white"
-                    p={2}
-                    borderRadius={2}
-                    boxShadow={1}
-                    sx={{ mb: 3 }}
-                >
-                    {user.role == "admin" ?
-                        <Box>
-                            <TextField
-                                label="公告内容"
-                                multiline
-                                fullWidth
-                                rows={4}
-                                onChange={(e) => setNewContent(e.target.value)}
-                            />
-                            <LocalizationProvider dateAdapter={AdapterLuxon}>
-                                <DateTimePicker
-                                    label="有效至"
-                                    value={newValidUntil}
-                                    ampm={false}
-                                    views={['year', 'month', 'day', 'hours', 'minutes', 'seconds']}
-                                    onChange={(newValue) => setNewValidUntil(newValue)}
-                                    renderInput={(params) => <TextField {...params} fullWidth sx={{ mt: 2, mb: 2 }} />}
-                                />
-                            </LocalizationProvider>
-                            <Button variant="outlined">创建公告</Button>
-                        </Box> : <></>
-                    }
-                </Box>
+                <CreateAnnouncement user={user} />
                 <Box
                     bgcolor="white"
                     p={2}
@@ -123,36 +174,17 @@ function Announcement({ user }) {
 
     return (
         <>
-            <Box
-                bgcolor="white"
-                p={2}
-                borderRadius={2}
-                boxShadow={1}
-                sx={{ mb: 3 }}
-            >
-                {user.role == "admin" ?
-                    <Box>
-                        <TextField
-                            label="公告内容"
-                            multiline
-                            fullWidth
-                            rows={4}
-                            onChange={(e) => setNewContent(e.target.value)}
-                        />
-                        <LocalizationProvider dateAdapter={AdapterLuxon}>
-                            <DateTimePicker
-                                label="有效至"
-                                value={newValidUntil}
-                                ampm={false}
-                                views={['year', 'month', 'day', 'hours', 'minutes', 'seconds']}
-                                onChange={(newValue) => setNewValidUntil(newValue)}
-                                renderInput={(params) => <TextField {...params} fullWidth sx={{ mt: 2, mb: 2 }} />}
-                            />
-                        </LocalizationProvider>
-                        <Button variant="outlined">创建公告</Button>
-                    </Box> : <></>
-                }
-            </Box>
+            <CreateAnnouncement user={user} />
+            <Snackbar open={deleteSuccessNoti} autoHideDuration={1000} onClose={() => { window.location.reload(); }}>
+                        <Alert
+                            onClose={() => { window.location.reload(); }}
+                            severity="success"
+                            variant="filled"
+                            sx={{ width: '100%' }}
+                        >
+                            公告删除成功！
+                        </Alert>
+                    </Snackbar>
             <Box
                 bgcolor="white"
                 p={2}

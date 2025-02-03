@@ -1,9 +1,9 @@
 import { pool } from '@utils/db';
 import { NextResponse } from 'next/server';
+import { DateTime } from 'luxon';
 
 export async function PATCH(req) {
     const { id } = await req.json();
-    const { DateTime } = require('luxon');
 
     if (!id) {
         return NextResponse.json({ message: "Missing announcement id" }, { status: 400 });
@@ -11,9 +11,10 @@ export async function PATCH(req) {
 
     try {
         console.log(DateTime.now().setZone('Asia/Shanghai').toFormat("yyyy-MM-dd HH:mm:ss"));
+
         const result = await pool.query(
-            'UPDATE announcements SET valid_until = $1 WHERE id = $2 RETURNING *',
-            [DateTime.now().setZone('Asia/Shanghai').toFormat("yyyy-MM-dd HH:mm:ss"), id]
+            'UPDATE announcements SET is_visible = $1 WHERE id = $2 RETURNING *',
+            [false, id]
         );
 
         if (result.rows.length === 0) {
