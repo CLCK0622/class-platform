@@ -15,16 +15,18 @@ function CoursesAndLessons({ setnoti }) {
     const [students, setStudents] = useState([]);
     const [selectedStudents, setSelectedStudents] = useState([]);
 
+    const [cName, setCName] = React.useState(null);
+    const [cSubject, setCSubject] = React.useState(null);
+    const [cYear, setCYear] = React.useState(null);
+    const [cSeason, setCSeason] = React.useState(null);
+
+    const [replay_link, setNewReplayURL] = React.useState("");
+
     const handleSelectionChange = (event, newValue) => {
         setSelectedStudents(newValue);
         setInfoChanged(true);
         console.log('Selected student IDs:', newValue.map(student => student.id));
     };
-
-    const [cName, setCName] = React.useState(null);
-    const [cSubject, setCSubject] = React.useState(null);
-    const [cYear, setCYear] = React.useState(null);
-    const [cSeason, setCSeason] = React.useState(null);
 
     useEffect(() => {
         async function fetchSessionLessons() {
@@ -89,7 +91,7 @@ function CoursesAndLessons({ setnoti }) {
     const { course, lessons } = courseData;
 
     const handleDropCourse = () => {
-        // wip
+        // TODO
         alert('Course dropped!');
     };
 
@@ -107,6 +109,24 @@ function CoursesAndLessons({ setnoti }) {
             window.location.reload();
         } else {
             alert('Course change failed. Please try again later.');
+            console.log(res.error);
+            window.location.reload();
+        }
+    }
+
+    const handleModifyURL = async () => {
+        const res = await fetch(`/api/userCourses/modify`, {
+            method: "POST",
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ id: id, cURL: replay_link }),
+        });
+        if (res.ok) {
+            alert('URL changed!');
+            window.location.reload();
+        } else {
+            alert('URL change failed. Please try again later.');
             console.log(res.error);
             window.location.reload();
         }
@@ -262,23 +282,49 @@ function CoursesAndLessons({ setnoti }) {
                                                     </Typography>
                                                 </Grid2>
                                             </Grid2>
-                                            <Box sx={{ justifySelf: "flex-end" }}>
-                                                <Button
-                                                    disabled={isPast || cancelled}
-                                                    style={{ marginRight: '8px' }}
-                                                >
-                                                    请假
-                                                </Button>
-                                                <Button
-                                                    disabled={isPast || cancelled}
-                                                    style={{ marginRight: '8px' }}
-                                                >
-                                                    调课
-                                                </Button>
-                                                <Button disabled={!replayAvailable || cancelled} href={lesson.replay_link} target='_blank'>
-                                                    查看回放
-                                                </Button>
-                                            </Box>
+                                            {user.role == "student" ?
+                                                <Box sx={{ justifySelf: "flex-end" }}>
+                                                    <Button
+                                                        disabled={isPast || cancelled}
+                                                        style={{ marginRight: '8px' }}
+                                                    >
+                                                        请假
+                                                    </Button>
+                                                    <Button
+                                                        disabled={isPast || cancelled}
+                                                        style={{ marginRight: '8px' }}
+                                                    >
+                                                        调课
+                                                    </Button>
+                                                    <Button disabled={!replayAvailable || cancelled} href={lesson.replay_link} target='_blank'>
+                                                        查看回放
+                                                    </Button>
+                                                </Box>
+                                                :
+                                                <Box sx={{ justifySelf: "flex-end" }}>
+                                                    <Button>
+                                                        管理课节
+                                                    </Button>
+
+                                                    <AlertDialog
+                                                        button={<Button disabled={cancelled}>
+                                                            设置回放
+                                                        </Button>}
+                                                        title={`设置回放链接`}
+                                                        description={<>
+                                                            <Typography>您正在设置{course.course_name}的回放链接！</Typography>
+                                                            <TextField
+                                                                label="回放链接"
+                                                                fullWidth
+                                                                rows={4}
+                                                                sx={{ mt: 2 }}
+                                                                defaultValue={lesson.replay_link}
+                                                                onChange={(e) => setNewReplayURL(e.target.value)}
+                                                            />
+                                                        </>}
+                                                        agreeAction={() => { handleModifyURL(id); }}
+                                                    />
+                                                </Box>}
                                         </Box>
                                     </Grid2>
                                 );

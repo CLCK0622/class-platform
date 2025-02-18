@@ -1,16 +1,28 @@
-const { AppBar, Container, Toolbar, Box, IconButton, Menu, MenuItem, Typography, Button, Tooltip, Avatar } = require("@mui/material");
+const {
+    AppBar,
+    Container,
+    Toolbar,
+    Box,
+    IconButton,
+    Menu,
+    MenuItem,
+    Typography,
+    Button,
+    Tooltip,
+    Avatar
+} = require("@mui/material");
 import * as React from "react";
-import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
-import { Link } from "@mui/material";
-
-const pages = ['选课中心'];
+import {useEffect, useState} from "react";
+import {useRouter} from "next/navigation";
+import {Link} from "@mui/material";
 
 function NavBar() {
     const [anchorElNav, setAnchorElNav] = React.useState(null);
     const [anchorElUser, setAnchorElUser] = React.useState(null);
     const [user, setUser] = React.useState(null);
     const router = useRouter();
+
+    const pages = [{name: '选课中心', href: "/selectCourses"}, {name: '单词背诵', href: "/recite"},];
 
     const handleOpenNavMenu = (event) => {
         setAnchorElNav(event.currentTarget);
@@ -29,7 +41,7 @@ function NavBar() {
 
     const handleLogout = async () => {
         try {
-            await fetch("/api/logout", { method: "POST" });
+            await fetch("/api/logout", {method: "POST"});
             localStorage.removeItem("token");
             setTimeout(() => {
                 router.push("/");
@@ -45,7 +57,7 @@ function NavBar() {
             if (!token) return;
 
             const res = await fetch("/api/session", {
-                headers: { Authorization: `Bearer ${token}` },
+                headers: {Authorization: `Bearer ${token}`},
             });
 
             if (res.ok) {
@@ -64,13 +76,13 @@ function NavBar() {
             <Container maxWidth="xl">
                 <Toolbar disableGutters>
                     <Typography
-                        variant="h6"
+                        variant="h5"
                         noWrap
                         component="a"
                         href="/dashboard"
                         sx={{
-                            mr: 2,
-                            display: { xs: 'none', md: 'flex' },
+                            mr: 1,
+                            display: 'flex',
                             fontFamily: 'monospace',
                             fontWeight: 700,
                             letterSpacing: '.3rem',
@@ -80,73 +92,32 @@ function NavBar() {
                     >
                         Demo
                     </Typography>
-                    <Box>
-                        <Menu
-                            id="menu-appbar"
-                            anchorEl={anchorElNav}
-                            anchorOrigin={{
-                                vertical: 'bottom',
-                                horizontal: 'left',
-                            }}
-                            keepMounted
-                            transformOrigin={{
-                                vertical: 'top',
-                                horizontal: 'left',
-                            }}
-                            open={Boolean(anchorElNav)}
-                            onClose={handleCloseNavMenu}
-                            sx={{ display: { xs: 'block', md: 'none' } }}
-                        >
-                            {pages.map((page) => (
-                                <MenuItem key={page} onClick={handleCloseNavMenu}>
-                                    <Typography sx={{ textAlign: 'center' }}>{page}</Typography>
-                                </MenuItem>
-                            ))}
-                        </Menu>
-                    </Box>
-                    <Typography
-                        variant="h5"
-                        noWrap
-                        component="a"
-                        href="#app-bar-with-responsive-menu"
-                        sx={{
-                            mr: 2,
-                            display: { xs: 'flex', md: 'none' },
-                            flexGrow: 1,
-                            fontFamily: 'monospace',
-                            fontWeight: 700,
-                            letterSpacing: '.3rem',
-                            color: 'inherit',
-                            textDecoration: 'none',
-                        }}
-                    >
-                        Demo
-                    </Typography>
-                    <Box sx={{ flexGrow: 1, display: { xs: 'none', md: 'flex' } }}>
-                        {pages.map((page) => (
+                    <Box sx={{flexGrow: 1, display: 'flex'}}>
+                        {pages.map((page, index) => (
                             <Button
-                                key={page}
+                                key={index}
                                 onClick={handleCloseNavMenu}
-                                sx={{ my: 2, color: 'white', display: 'block' }}
+                                href={page.href}
+                                sx={{my: 2, color: 'white', display: 'block'}}
                             >
-                                {page}
+                                {page.name}
                             </Button>
                         ))}
                     </Box>
-                    <Box sx={{ flexGrow: 0 }}>
+                    <Box sx={{flexGrow: 0}}>
                         {user ? (
                             <Tooltip title="显示菜单">
-                                <IconButton onClick={handleOpenUserMenu} sx={{ p: 0 }}>
-                                    <Avatar alt="Remy Sharp" src={user.avatar_url || ""} />
+                                <IconButton onClick={handleOpenUserMenu} sx={{p: 0}}>
+                                    <Avatar alt="Remy Sharp" src={user.avatar_url || ""}/>
                                 </IconButton>
                             </Tooltip>
                         ) : (
                             <Link href={"/"}>
-                                <Button sx={{ color: "white" }}>登录/注册</Button>
+                                <Button sx={{color: "white"}}>登录/注册</Button>
                             </Link>
                         )}
                         <Menu
-                            sx={{ mt: '45px' }}
+                            sx={{mt: '45px'}}
                             id="menu-appbar"
                             anchorEl={anchorElUser}
                             anchorOrigin={{
@@ -161,13 +132,13 @@ function NavBar() {
                             open={Boolean(anchorElUser)}
                             onClose={handleCloseUserMenu}
                         >
-                            <Link color="inherit" underline="none" sx={{ textAlign: 'center' }} href={"/courses"}>
+                            <Link color="inherit" underline="none" sx={{textAlign: 'center'}} href={"/courses"}>
                                 <MenuItem>我的课程</MenuItem>
                             </Link>
-                            <Link color="inherit" underline="none" sx={{ textAlign: 'center' }} href={"/dashboard"}>
+                            <Link color="inherit" underline="none" sx={{textAlign: 'center'}} href={"/dashboard"}>
                                 <MenuItem>个人中心</MenuItem>
                             </Link>
-                            <MenuItem sx={{ textAlign: 'center' }} onClick={handleLogout}>
+                            <MenuItem sx={{textAlign: 'center'}} onClick={handleLogout}>
                                 登出
                             </MenuItem>
                         </Menu>
@@ -177,4 +148,5 @@ function NavBar() {
         </AppBar>
     );
 }
+
 export default NavBar;

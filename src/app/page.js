@@ -21,7 +21,7 @@ export default function Home() {
     const handleLogin = async (event) => {
         event.preventDefault();
         setOpenLoginAlert(true);
-        setAlertMessage("Login in progress...");
+        setAlertMessage("正在登录……");
         setAlertSeverity("warning");
 
         try {
@@ -34,18 +34,18 @@ export default function Home() {
             const data = await res.json();
 
             if (res.ok) {
-                setAlertMessage("Login successful!");
+                setAlertMessage("登录成功！");
                 setAlertSeverity("success");
                 localStorage.setItem("token", data.token);
                 setTimeout(() => {
                     router.push("/dashboard");
                 }, 500);
             } else {
-                setAlertMessage(data.error || "Login failed. Please try again.");
+                setAlertMessage(data.error || "登录失败，请再试一次！");
                 setAlertSeverity("error");
             }
         } catch (error) {
-            setAlertMessage("An error occurred. Please try again later.\n", error);
+            setAlertMessage("发生错误，请稍后重试。\n", error);
             setAlertSeverity("error");
         } finally {
             setOpenLoginAlert(true);
@@ -57,7 +57,7 @@ export default function Home() {
     const handleRegister = async (event) => {
         event.preventDefault();
         setOpenRegisterAlert(true);
-        setAlertMessage("Register in progress...");
+        setAlertMessage("正在注册……");
         setAlertSeverity("warning");
 
         try {
@@ -71,14 +71,14 @@ export default function Home() {
             console.log(data);
 
             if (res.ok) {
-                setAlertMessage("Register successful! Please log in.");
+                setAlertMessage("注册成功！请登录。");
                 setAlertSeverity("success");
             } else {
-                setAlertMessage(data.error || "Register failed, please try again.");
+                setAlertMessage(data.error || "注册失败，请重试。");
                 setAlertSeverity("error");
             }
         } catch (error) {
-            setAlertMessage("An error occurred. Please try again later.\n", error);
+            setAlertMessage("发生错误，请稍后重试。\n", error);
             setAlertSeverity("error");
         } finally {
             setOpenLoginAlert(true);

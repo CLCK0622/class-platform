@@ -6,6 +6,7 @@ import NavBar from "../components/nav-bar";
 import { useRouter } from "next/navigation";
 import { DataGrid } from '@mui/x-data-grid';
 import { useEffect, useState } from 'react';
+import { PushPinRounded } from "@mui/icons-material";
 
 function PersonalInfo({ user }) {
     return (
@@ -275,7 +276,7 @@ function Announcement({ user }) {
                     setTimeout(() => {
                         router.push("/announcement");
                     }, 50);
-                }}>修改</Button> : ""}
+                }}>管理</Button> : ""}
             </Box>
             <Box
                 textAlign="left"
@@ -283,16 +284,16 @@ function Announcement({ user }) {
                 height={160}
                 sx={{ wordWrap: 'break-word' }}
             >
-                {announcements.map(({ id, content, valid_until }) => (
-                    Date.now() < new Date(valid_until) || valid_until == null ?
-                        <Box key={id} mb={2}>
-                            <Typography variant="body1" color="black" gutterBottom>
-                                {content}
-                            </Typography>
-                            <Typography variant="caption" color="textSecondary">
-                                有效至：{valid_until ? `${new Date(valid_until).toLocaleString()}` : "永久有效"}
-                            </Typography>
-                        </Box> : <></>
+                {announcements.map(({ id, content, valid_until, priority }) => (
+                    Date.now() < new Date(valid_until) || valid_until == null ? 
+                            <Box item="true" key={id} sx={{ mt: 1, mb: 1 }} flexDirection={"column"}>
+                                <Typography justifySelf={"flex-start"} variant="body1" color="black" gutterBottom>
+                                    {priority ? <PushPinRounded color="disabled" sx={{fontSize: 15, mr: 1}} /> : <></>}{content}
+                                </Typography>
+                                <Typography justifySelf={"flex-start"} variant="caption" color="textSecondary">
+                                    有效至：{valid_until ? `${new Date(valid_until).toLocaleString()}` : "永久有效"}
+                                </Typography>
+                            </Box> : <></>
                 ))}
             </Box>
         </Box>
